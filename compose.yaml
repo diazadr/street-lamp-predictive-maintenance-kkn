@@ -1,0 +1,128 @@
+# Seluruh stack (seperti compose.yaml MANGO): backend FastAPI + worker + frontend Next.js.
+# Untuk backend saja, lihat backend/compose.yaml.
+services:
+  postgres:
+    image: docker.io/timescale/timescaledb:latest-pg15
+    container_name: slpm_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pju_monitoring
+      POSTGRES_USER: pju
+      POSTGRES_PASSWORD: pju
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pju -d pju_monitoring"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - slpm_net
+
+  redis:
+    image: docker.io/library/redis:7-alpine
+    container_name: slpm_redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - slpm_net
+
+  mqtt:
+    image: docker.io/emqx/emqx:latest
+    container_name: slpm_mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "18083:18083"
+    healthcheck:
+      test: ["CMD-SHELL", "emqx_ctl status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - slpm_net
+
+  backend:
+    build: ./backend
+    container_name: slpm_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mqtt:
+        condition: service_started
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/firmware:/app/firmware
+      - ./backend/ml_models:/app/ml_models
+      - ./backend/backups:/app/backups
+      - ./backend/reports:/app/reports
+    networks:
+      - slpm_net
+
+  celery_worker:
+    build: ./backend
+    container_name: slpm_worker
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    command: ["celery", "-A", "app.tasks.celery_app.celery_app", "worker", "--loglevel=INFO", "--concurrency=2"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/ml_models:/app/ml_models
+      - ./backend/backups:/app/backups
+      - ./backend/reports:/app/reports
+    networks:
+      - slpm_net
+
+  celery_beat:
+    build: ./backend
+    container_name: slpm_beat
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    command: ["celery", "-A", "app.tasks.celery_app.celery_app", "beat", "--loglevel=INFO"]
+    depends_on:
+      - redis
+    networks:
+      - slpm_net
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # dibaca browser, jadi harus URL yang bisa diakses dari luar container
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    container_name: slpm_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - slpm_net
+
+volumes:
+  postgres_data:
+
+networks:
+  slpm_net:
+    driver: bridge

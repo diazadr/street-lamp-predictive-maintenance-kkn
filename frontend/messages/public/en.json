@@ -1,0 +1,466 @@
+{
+  "HomePage": {
+    "title": "Street Lamp Predictive Maintenance — Predictive Care for Solar Street Lights"
+  },
+  "ThemeToggle": {
+    "label_toggle_theme": "Toggle theme"
+  },
+  "StatusAlert": {
+    "label_dismiss": "Dismiss"
+  },
+  "PublicNavbar": {
+    "about": "About",
+    "technology": "Technology",
+    "features": "Features",
+    "faq": "FAQ",
+    "login": "Log in",
+    "register": "Sign up",
+    "dashboard": "Open Dashboard",
+    "label_toggle_menu": "Toggle menu",
+    "map": "Map"
+  },
+  "PublicFooter": {
+    "description": "An IoT-based predictive maintenance platform for solar-powered public street lights — monitoring every lamp and predicting failures before they happen.",
+    "platform_title": "Platform",
+    "platform": {
+      "monitoring": "Real-time telemetry monitoring",
+      "prediction": "ML-based failure prediction",
+      "tickets": "Repair tickets & technician dispatch",
+      "energy": "Energy & sustainability analytics"
+    },
+    "contact_title": "Contact",
+    "contact": {
+      "address": "Jl. Penerangan Jalan No. 1, Indonesia",
+      "phone": "+62 812-0000-0000",
+      "email": "hello@streetlamp-pdm.id"
+    },
+    "copyright": "Street Lamp Predictive Maintenance. All rights reserved.",
+    "login": "Operator Login"
+  },
+  "HeroSection": {
+    "title_1": "Street lights that",
+    "title_highlight": "tell you",
+    "title_2": "before they fail.",
+    "description": "Monitor every solar street light in real time — battery, solar panel and LED — and let machine learning predict failures so your team can repair before the lights go dark.",
+    "cta_map": "See the lamp map",
+    "open_dashboard": "Open dashboard",
+    "scroll": "Scroll",
+    "fact_1": {
+      "value": "24/7",
+      "label": "telemetry per lamp"
+    },
+    "fact_2": {
+      "value": "±7 days",
+      "label": "warning before failure"
+    },
+    "fact_3": {
+      "value": "0 kWh",
+      "label": "grid power for lighting"
+    }
+  },
+  "ProblemSection": {
+    "title_highlight": "The classic problems",
+    "title_rest": "of public street lighting",
+    "description": "Thousands of street lights are spread across the city, yet their condition is only known once they go dark. Maintenance becomes reactive, costly and slow.",
+    "items": {
+      "late_detection": {
+        "title": "Failures are noticed too late",
+        "desc": "Broken lights are often only reported by residents days later, while the street is already dark and unsafe."
+      },
+      "manual_patrol": {
+        "title": "Costly manual patrols",
+        "desc": "Crews have to drive around checking each pole — wasting time, fuel and manpower with no guarantee of finding the issue."
+      },
+      "battery_degradation": {
+        "title": "Unmonitored battery degradation",
+        "desc": "Battery capacity and solar panel efficiency decline silently until the lamp can no longer last the night."
+      },
+      "no_data": {
+        "title": "Decisions without data",
+        "desc": "Without historical data, maintenance schedules and spare-part procurement are based on guesswork."
+      }
+    },
+    "timeline": {
+      "reactive": {
+        "title": "The old way (reactive)",
+        "desc": "Wait for the lamp to fail"
+      },
+      "predictive": {
+        "title": "With this platform",
+        "desc": "Act on the data"
+      },
+      "events": {
+        "degrading": "Battery starts to weaken",
+        "lamp_off": "Lamp goes dark",
+        "citizen_report": "Citizen report",
+        "repaired_late": "Repaired",
+        "detected": "Decline detected",
+        "alert": "Alert sent",
+        "ticket": "Ticket to technician",
+        "repaired_early": "Fixed before failing"
+      },
+      "dark_nights": "nights of dark road",
+      "day_zero": "Day 0"
+    }
+  },
+  "SolutionSection": {
+    "title_part1": "One dashboard for",
+    "title_part2": "your entire lighting network",
+    "description": "Each lamp streams telemetry through an ESP32. The platform turns it into health status, risk predictions and automatic repair tickets.",
+    "cta_button": "See the Technology",
+    "steps": {
+      "sense": {
+        "title": "Sensors read",
+        "desc": "An ESP32 on every pole measures battery, voltage, power, and ambient light every few minutes."
+      },
+      "send": {
+        "title": "Data is sent",
+        "desc": "Telemetry travels over MQTT to the server — and is buffered on the device when the signal drops."
+      },
+      "analyze": {
+        "title": "The model scores risk",
+        "desc": "Machine learning computes a health score, failure risk, and estimated days until failure.",
+        "risk": "failure risk",
+        "eta": "estimated failure",
+        "days": "days"
+      },
+      "act": {
+        "title": "The team acts",
+        "desc": "Alerts and repair tickets are created automatically, with priority and an assigned technician.",
+        "priority": "high priority",
+        "assigned": "assigned to Technician B"
+      }
+    }
+  },
+  "TechnologySection": {
+    "title_part1": "Technology that",
+    "title_highlight": "works together",
+    "items": {
+      "lamp": {
+        "title": "LED Lamp Head",
+        "desc": "High-efficiency LED array with adaptive 10–100% dimming plus light/motion sensors to save energy during quiet hours.",
+        "specs": [
+          "50 W LED",
+          "6500 K",
+          "10–100% dimming",
+          "50,000 h lifespan"
+        ],
+        "short": "LED"
+      },
+      "solar": {
+        "title": "Monocrystalline Solar Panel",
+        "desc": "A 100 Wp panel with 22% conversion efficiency charges the battery by day. Its output is tracked to detect dirty or damaged panels.",
+        "specs": [
+          "100 Wp",
+          "22% efficiency",
+          "Anti-reflective glass",
+          "Optimal tilt"
+        ],
+        "short": "Solar panel"
+      },
+      "battery": {
+        "title": "LiFePO4 Battery + BMS",
+        "desc": "Long-cycle battery with a Battery Management System. Level, voltage and temperature are reported periodically so degradation can be predicted.",
+        "specs": [
+          "200 Wh",
+          "3000+ cycles",
+          "Smart BMS",
+          "3–5 nights autonomy"
+        ],
+        "short": "Battery"
+      },
+      "controller": {
+        "title": "ESP32 IoT Controller",
+        "desc": "The brain of the lamp: reads every sensor, sends telemetry over MQTT/HTTP, receives brightness & schedule commands and supports OTA updates.",
+        "specs": [
+          "Dual-core 240 MHz",
+          "Wi-Fi + BLE",
+          "MQTT",
+          "OTA updates"
+        ],
+        "short": "ESP32"
+      }
+    }
+  },
+  "CoreFeaturesSection": {
+    "title_part1": "Everything you need for",
+    "title_highlight": "proactive maintenance",
+    "description": "From the sensor on the pole to the report for management — one complete workflow.",
+    "items": {
+      "realtime": {
+        "title": "Real-time Monitoring",
+        "desc": "Voltage, current, power, battery, lux and temperature of every lamp, live on the dashboard."
+      },
+      "prediction": {
+        "title": "Failure Prediction (ML)",
+        "desc": "Machine learning models estimate failure probability and the number of days until failure."
+      },
+      "tickets": {
+        "title": "Repair Tickets",
+        "desc": "Tickets are created automatically on faults and assigned to technicians, with notes and photos."
+      },
+      "map": {
+        "title": "Lamp Map",
+        "desc": "See every lamp's status on an interactive map and locate problem spots in seconds."
+      },
+      "schedule": {
+        "title": "Schedules & Dimming",
+        "desc": "Set on-hours, automatic sunrise/sunset and brightness profiles sent straight to the device."
+      },
+      "reports": {
+        "title": "Ready-to-download Reports",
+        "desc": "Status, energy, maintenance and prediction reports in PDF or CSV."
+      }
+    }
+  },
+  "LiveMonitoringSection": {
+    "title_part1": "Network data,",
+    "title_highlight": "straight from the field",
+    "description": "An aggregated snapshot of every connected lamp, refreshed every 30 seconds.",
+    "live": "Live data from server",
+    "demo": "Demo data — server not connected",
+    "kpi": {
+      "total": "Total lamps",
+      "online": "Online rate",
+      "battery": "Average battery",
+      "alerts": "Active alerts"
+    },
+    "chart_title": "Hourly energy flow",
+    "solar": "Solar production",
+    "consumed": "Lamp consumption",
+    "impact_title": "CO₂ emissions avoided",
+    "generated": "Solar energy",
+    "efficiency": "Production / consumption ratio"
+  },
+  "CTASection": {
+    "card_title": "One platform, many roles",
+    "entities": {
+      "government": {
+        "title": "Public Works / Local Gov.",
+        "desc": "Track street-light assets, energy budget and maintenance performance in one view."
+      },
+      "operator": {
+        "title": "Operators & Technicians",
+        "desc": "Receive prioritised tickets, log repairs and upload photo evidence."
+      },
+      "village": {
+        "title": "Villages & Districts",
+        "desc": "Keep neighbourhood roads lit with energy-independent solar lamps."
+      }
+    },
+    "title_part1": "Ready to keep streets",
+    "title_highlight": "always lit",
+    "title_part2": "?",
+    "description": "Register your operator account. Once approved by an admin you can start monitoring and maintaining your lighting network.",
+    "btn_primary": "Register as Operator",
+    "btn_secondary": "I already have an account",
+    "drag_hint": "Drag to rotate the model"
+  },
+  "FAQSection": {
+    "title_part1": "Frequently",
+    "title_part2": "asked questions",
+    "description": "Can't find your answer? Reach our team via the contact details at the bottom of the page.",
+    "items": {
+      "what_is": {
+        "question": "What is Street Lamp Predictive Maintenance?",
+        "answer": "A platform for monitoring IoT-enabled solar street lights and predicting their failures with machine learning, so maintenance happens before the lights go out."
+      },
+      "how_predict": {
+        "question": "How are failures predicted?",
+        "answer": "An ML model learns telemetry patterns (battery, voltage, power, temperature, lux) and outputs a risk level, failure probability and estimated days to failure. Predictions activate after at least 48 telemetry points (~4 days)."
+      },
+      "hardware": {
+        "question": "What hardware does each lamp need?",
+        "answer": "An ESP32 controller connected to voltage/current sensors, the battery BMS and a light sensor. Data is periodically sent to the server over Wi-Fi/MQTT."
+      },
+      "offline": {
+        "question": "What happens when a lamp loses connection?",
+        "answer": "The lamp keeps running on its last schedule. The system marks it offline after a timeout and raises an alert so the team can inspect it."
+      },
+      "roles": {
+        "question": "Who can use the platform?",
+        "answer": "Admins manage users and system settings, operators handle monitoring and repair tickets, and viewers can see dashboards and reports."
+      },
+      "data": {
+        "question": "Can data be exported?",
+        "answer": "Yes. Telemetry can be exported to CSV, and status, energy, maintenance and prediction reports are available as PDF and CSV."
+      }
+    }
+  },
+  "ErrorPage": {
+    "go_back": "Go Back",
+    "go_home": "Back to Home",
+    "try_again": "Try Again",
+    "403": {
+      "title": "Access Denied",
+      "description": "You don't have permission to open this page. Contact an admin if you think this is a mistake."
+    },
+    "404": {
+      "title": "Page Not Found",
+      "description": "The page you are looking for may have been moved, deleted or never existed."
+    },
+    "500": {
+      "title": "Something Went Wrong",
+      "description": "The server ran into a problem. Please try again shortly."
+    }
+  },
+  "AuthLayout": {
+    "back_home": "Home",
+    "hero_title_1": "Care for street lights",
+    "hero_title_accent": "before they go dark",
+    "hero_desc": "Sign in to monitor telemetry, risk predictions and repair tickets across your whole solar street-light network."
+  },
+  "LoginPage": {
+    "title": "Log in",
+    "subtitle": "Sign in to access the predictive maintenance dashboard.",
+    "email_label": "Email",
+    "email_placeholder": "name@email.com",
+    "password_label": "Password",
+    "password_placeholder": "••••••••",
+    "forgot_password": "Forgot password?",
+    "submit_button": "Log in",
+    "processing": "Processing...",
+    "no_account": "Don't have an account?",
+    "register": "Sign up now",
+    "logout_success": "You have been logged out.",
+    "reset_success": "Password updated. Please log in with your new password.",
+    "errors": {
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email format",
+      "password_required": "Password is required",
+      "wrong_credentials": "Incorrect email or password.",
+      "inactive": "Account is not active yet. Make sure your email is verified and an admin has approved your account.",
+      "too_many": "Too many attempts. Try again in a minute.",
+      "server_error": "Unable to reach the server. Please try again later."
+    }
+  },
+  "RegisterPage": {
+    "title": "Create Account",
+    "subtitle": "Register as an operator of the street-light maintenance system.",
+    "name_label": "Full name",
+    "name_placeholder": "Full name",
+    "email_label": "Email",
+    "email_placeholder": "name@email.com",
+    "password_label": "Password",
+    "password_placeholder": "Min. 8 characters",
+    "confirm_label": "Confirm password",
+    "confirm_placeholder": "Repeat password",
+    "note": "New accounts are registered as <accent>Operator</accent> and require email verification and admin approval.",
+    "submit_button": "Create Account",
+    "processing": "Registering...",
+    "have_account": "Already have an account?",
+    "login": "Log in",
+    "strength": {
+      "1": "Weak",
+      "2": "Fair",
+      "3": "Strong",
+      "4": "Very strong"
+    },
+    "errors": {
+      "name_required": "Full name is required",
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email format",
+      "password_min": "Password must be at least 8 characters",
+      "password_mismatch": "Passwords do not match",
+      "failed": "Registration failed. The email may already be registered."
+    }
+  },
+  "ForgotPasswordPage": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email and we'll send you a link to reset your password.",
+    "email_label": "Email",
+    "submit_button": "Send Reset Link",
+    "processing": "Sending...",
+    "sent_title": "Email Sent",
+    "sent_desc": "If the email is registered, a reset link has been sent to {email}. The link is valid for 1 hour.",
+    "back_login": "Back to log in",
+    "error": "Failed to send email. Please try again."
+  },
+  "ResetPasswordPage": {
+    "title": "Reset Password",
+    "subtitle": "Create a new password for your account.",
+    "password_label": "New password",
+    "confirm_label": "Confirm password",
+    "submit_button": "Save Password",
+    "processing": "Saving...",
+    "invalid_title": "Invalid Link",
+    "invalid_desc": "The password reset token is missing or has expired.",
+    "request_new": "Request a new link",
+    "back_login": "Back to log in",
+    "error": "The reset link is invalid or has expired."
+  },
+  "VerifyEmailPage": {
+    "title": "Check Your Email",
+    "desc_sent": "We've sent a verification link to:",
+    "desc_expire": "Click the link in the email to verify your account. The link is valid for 24 hours.",
+    "resend": "Resend email",
+    "resend_wait": "Resend ({seconds}s)",
+    "sending": "Sending...",
+    "resent": "Verification email resent.",
+    "resend_failed": "Failed to resend email. Please try again shortly.",
+    "verifying": "Verifying your email...",
+    "verify_failed_title": "Verification Failed",
+    "verify_failed": "The verification link is invalid or has expired.",
+    "email_label": "Email to resend to",
+    "back_login": "Back to log in"
+  },
+  "VerificationSuccessPage": {
+    "title": "Email Verified",
+    "desc_1": "Your email has been verified successfully.",
+    "desc_2": "Your account is now awaiting admin approval. You'll receive an email once it's approved.",
+    "to_login": "Go to Log in"
+  },
+  "AwaitingApprovalPage": {
+    "title": "Awaiting Approval",
+    "desc": "Your account is being reviewed by an admin. You'll get an email once it's approved or rejected.",
+    "back_login": "Back to log in"
+  },
+  "LampMapSection": {
+    "title": "Lamps across the field",
+    "description": "Every dot is one connected lamp. Pick a lamp on the map or in the table to see its condition and a sample of the data its device sends.",
+    "source_live": "Live data · {count} lamps",
+    "source_demo": "Sample data — server not connected",
+    "filter_label": "Filter lamp status",
+    "filter": {
+      "all": "All",
+      "online": "Normal",
+      "warning": "Needs attention",
+      "fault": "Fault",
+      "offline": "Offline / service"
+    },
+    "status": {
+      "online": "Normal",
+      "warning": "Needs attention",
+      "fault": "Fault",
+      "offline": "Offline",
+      "maintenance": "Service"
+    },
+    "risk_level": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "unknown": "None yet"
+    },
+    "battery": "Battery",
+    "brightness": "Brightness",
+    "health": "Health score",
+    "risk": "Risk",
+    "no_place": "No location",
+    "payload": "Sample data sent by the device",
+    "table": {
+      "code": "Code",
+      "place": "Location",
+      "status": "Status"
+    }
+  },
+  "LampCallout": {
+    "online": "Online",
+    "battery": "Battery",
+    "solar": "Solar panel",
+    "brightness": "Brightness",
+    "risk": "Failure risk",
+    "risk_value": "Low · 12%",
+    "next_service": "Next service",
+    "next_service_value": "±23 days"
+  }
+}

@@ -1,0 +1,34 @@
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Runtime data (keep folders, not contents)
+backend/uploads/**
+!backend/uploads/.gitkeep
+backend/backups/*
+!backend/backups/.gitkeep
+backend/reports/*
+!backend/reports/.gitkeep
+backend/ml_models/*
+!backend/ml_models/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

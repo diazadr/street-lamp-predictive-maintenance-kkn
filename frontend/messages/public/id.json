@@ -1,0 +1,466 @@
+{
+  "HomePage": {
+    "title": "Street Lamp Predictive Maintenance — Pemeliharaan Prediktif Lampu Jalan Surya"
+  },
+  "ThemeToggle": {
+    "label_toggle_theme": "Ganti tema"
+  },
+  "StatusAlert": {
+    "label_dismiss": "Tutup"
+  },
+  "PublicNavbar": {
+    "about": "Tentang",
+    "technology": "Teknologi",
+    "features": "Fitur",
+    "faq": "FAQ",
+    "login": "Masuk",
+    "register": "Daftar",
+    "dashboard": "Buka Dashboard",
+    "label_toggle_menu": "Buka/tutup menu",
+    "map": "Peta"
+  },
+  "PublicFooter": {
+    "description": "Platform pemeliharaan prediktif untuk lampu penerangan jalan umum (PJU) tenaga surya berbasis IoT — memantau kondisi setiap lampu dan memprediksi kerusakan sebelum terjadi.",
+    "platform_title": "Platform",
+    "platform": {
+      "monitoring": "Monitoring telemetri real-time",
+      "prediction": "Prediksi kerusakan berbasis ML",
+      "tickets": "Tiket perbaikan & penugasan teknisi",
+      "energy": "Analitik energi & keberlanjutan"
+    },
+    "contact_title": "Kontak",
+    "contact": {
+      "address": "Jl. Penerangan Jalan No. 1, Indonesia",
+      "phone": "+62 812-0000-0000",
+      "email": "halo@streetlamp-pdm.id"
+    },
+    "copyright": "Street Lamp Predictive Maintenance. Hak cipta dilindungi.",
+    "login": "Masuk Operator"
+  },
+  "HeroSection": {
+    "title_1": "Lampu jalan yang",
+    "title_highlight": "memberi tahu",
+    "title_2": "sebelum rusak.",
+    "description": "Pantau setiap lampu penerangan jalan tenaga surya secara real-time — baterai, panel surya, dan LED — lalu biarkan machine learning memprediksi kerusakan sehingga tim bisa memperbaiki sebelum lampu padam.",
+    "cta_map": "Lihat peta lampu",
+    "open_dashboard": "Masuk dashboard",
+    "scroll": "Gulir",
+    "fact_1": {
+      "value": "24/7",
+      "label": "telemetri tiap lampu"
+    },
+    "fact_2": {
+      "value": "±7 hari",
+      "label": "peringatan sebelum gagal"
+    },
+    "fact_3": {
+      "value": "0 kWh",
+      "label": "listrik PLN untuk penerangan"
+    }
+  },
+  "ProblemSection": {
+    "title_highlight": "Masalah klasik",
+    "title_rest": "penerangan jalan umum",
+    "description": "Ribuan titik PJU tersebar luas, tetapi kondisinya baru diketahui setelah padam. Pemeliharaan menjadi reaktif, mahal, dan lambat.",
+    "items": {
+      "late_detection": {
+        "title": "Kerusakan terlambat diketahui",
+        "desc": "Lampu mati sering baru diketahui dari laporan warga berhari-hari kemudian, sementara jalan sudah gelap dan rawan."
+      },
+      "manual_patrol": {
+        "title": "Patroli manual yang mahal",
+        "desc": "Petugas harus berkeliling memeriksa titik satu per satu — boros waktu, bahan bakar, dan tenaga tanpa jaminan menemukan masalah."
+      },
+      "battery_degradation": {
+        "title": "Degradasi baterai tak terpantau",
+        "desc": "Kapasitas baterai dan efisiensi panel surya menurun perlahan tanpa terlihat, hingga lampu gagal bertahan sepanjang malam."
+      },
+      "no_data": {
+        "title": "Keputusan tanpa data",
+        "desc": "Tanpa data historis, penjadwalan perawatan dan pengadaan suku cadang hanya berdasarkan perkiraan."
+      }
+    },
+    "timeline": {
+      "reactive": {
+        "title": "Cara lama (reaktif)",
+        "desc": "Menunggu lampu padam"
+      },
+      "predictive": {
+        "title": "Dengan platform ini",
+        "desc": "Bertindak dari data"
+      },
+      "events": {
+        "degrading": "Baterai mulai melemah",
+        "lamp_off": "Lampu padam",
+        "citizen_report": "Laporan warga",
+        "repaired_late": "Diperbaiki",
+        "detected": "Penurunan terdeteksi",
+        "alert": "Alert dikirim",
+        "ticket": "Tiket ke teknisi",
+        "repaired_early": "Diperbaiki sebelum padam"
+      },
+      "dark_nights": "malam jalan gelap",
+      "day_zero": "Hari H"
+    }
+  },
+  "SolutionSection": {
+    "title_part1": "Satu dashboard untuk",
+    "title_part2": "seluruh jaringan lampu",
+    "description": "Setiap lampu mengirim telemetri melalui ESP32. Platform mengolahnya menjadi status kesehatan, prediksi risiko, dan tiket perbaikan otomatis.",
+    "cta_button": "Lihat Teknologinya",
+    "steps": {
+      "sense": {
+        "title": "Sensor membaca",
+        "desc": "ESP32 di setiap tiang mengukur baterai, tegangan, daya, dan cahaya sekitar setiap beberapa menit."
+      },
+      "send": {
+        "title": "Data terkirim",
+        "desc": "Telemetri dikirim lewat MQTT ke server — tetap tersimpan di perangkat saat sinyal putus."
+      },
+      "analyze": {
+        "title": "Model menilai risiko",
+        "desc": "Machine learning menghitung health score, risiko gagal, dan perkiraan hari hingga rusak.",
+        "risk": "risiko gagal",
+        "eta": "perkiraan rusak",
+        "days": "hari"
+      },
+      "act": {
+        "title": "Tim bertindak",
+        "desc": "Alert dan tiket perbaikan dibuat otomatis, lengkap dengan prioritas dan teknisi yang ditugaskan.",
+        "priority": "prioritas tinggi",
+        "assigned": "ditugaskan ke Teknisi B"
+      }
+    }
+  },
+  "TechnologySection": {
+    "title_part1": "Teknologi yang",
+    "title_highlight": "saling terhubung",
+    "items": {
+      "lamp": {
+        "title": "Kepala Lampu LED",
+        "desc": "Array LED efisiensi tinggi dengan dimming adaptif 10–100% dan sensor cahaya/gerak untuk menghemat energi di jam sepi.",
+        "specs": [
+          "LED 50 W",
+          "6500 K",
+          "Dimming 10–100%",
+          "Umur 50.000 jam"
+        ],
+        "short": "LED"
+      },
+      "solar": {
+        "title": "Panel Surya Monokristalin",
+        "desc": "Panel 100 Wp dengan efisiensi konversi 22% mengisi baterai di siang hari. Produksi energinya dipantau untuk mendeteksi panel kotor atau rusak.",
+        "specs": [
+          "100 Wp",
+          "Efisiensi 22%",
+          "Kaca anti-reflektif",
+          "Kemiringan optimal"
+        ],
+        "short": "Panel surya"
+      },
+      "battery": {
+        "title": "Baterai LiFePO4 + BMS",
+        "desc": "Baterai siklus panjang dengan Battery Management System. Level, tegangan, dan suhu dikirim berkala sehingga degradasi dapat diprediksi.",
+        "specs": [
+          "200 Wh",
+          "3000+ siklus",
+          "Smart BMS",
+          "Otonomi 3–5 malam"
+        ],
+        "short": "Baterai"
+      },
+      "controller": {
+        "title": "Kontroler IoT ESP32",
+        "desc": "Otak lampu: membaca seluruh sensor, mengirim telemetri via MQTT/HTTP, menerima perintah kecerahan & jadwal, serta mendukung pembaruan OTA.",
+        "specs": [
+          "Dual-core 240 MHz",
+          "Wi-Fi + BLE",
+          "MQTT",
+          "Update OTA"
+        ],
+        "short": "ESP32"
+      }
+    }
+  },
+  "CoreFeaturesSection": {
+    "title_part1": "Semua yang dibutuhkan untuk",
+    "title_highlight": "perawatan proaktif",
+    "description": "Dari sensor di tiang hingga laporan untuk pimpinan — satu alur kerja yang utuh.",
+    "items": {
+      "realtime": {
+        "title": "Monitoring Real-time",
+        "desc": "Tegangan, arus, daya, baterai, lux, dan suhu setiap lampu tampil langsung di dashboard."
+      },
+      "prediction": {
+        "title": "Prediksi Kerusakan (ML)",
+        "desc": "Model machine learning menghitung probabilitas gagal dan estimasi hari hingga rusak."
+      },
+      "tickets": {
+        "title": "Tiket Perbaikan",
+        "desc": "Tiket dibuat otomatis saat fault, ditugaskan ke teknisi, lengkap dengan catatan & foto."
+      },
+      "map": {
+        "title": "Peta Sebaran Lampu",
+        "desc": "Lihat status seluruh lampu di peta interaktif dan temukan titik bermasalah dalam hitungan detik."
+      },
+      "schedule": {
+        "title": "Jadwal & Dimming",
+        "desc": "Atur jam nyala, sunrise/sunset otomatis, dan profil kecerahan yang dikirim langsung ke perangkat."
+      },
+      "reports": {
+        "title": "Laporan Siap Unduh",
+        "desc": "Laporan status, energi, pemeliharaan, dan prediksi dalam format PDF maupun CSV."
+      }
+    }
+  },
+  "LiveMonitoringSection": {
+    "title_part1": "Data jaringan,",
+    "title_highlight": "langsung dari lapangan",
+    "description": "Cuplikan agregat dari seluruh lampu yang terhubung, diperbarui setiap 30 detik.",
+    "live": "Data live dari server",
+    "demo": "Data demo — server belum terhubung",
+    "kpi": {
+      "total": "Total lampu",
+      "online": "Tingkat online",
+      "battery": "Rata-rata baterai",
+      "alerts": "Alert aktif"
+    },
+    "chart_title": "Aliran energi per jam",
+    "solar": "Produksi surya",
+    "consumed": "Konsumsi lampu",
+    "impact_title": "Emisi CO₂ yang dihindari",
+    "generated": "Energi surya",
+    "efficiency": "Rasio produksi / konsumsi"
+  },
+  "CTASection": {
+    "card_title": "Satu platform, banyak peran",
+    "entities": {
+      "government": {
+        "title": "Dinas / Pemerintah Daerah",
+        "desc": "Pantau aset PJU, anggaran energi, dan kinerja pemeliharaan dalam satu tampilan."
+      },
+      "operator": {
+        "title": "Operator & Teknisi",
+        "desc": "Terima tiket berprioritas, catat perbaikan, dan unggah foto bukti pekerjaan."
+      },
+      "village": {
+        "title": "Desa & Kawasan",
+        "desc": "Pastikan jalan lingkungan tetap terang dengan lampu surya yang mandiri energi."
+      }
+    },
+    "title_part1": "Siap membuat jalan",
+    "title_highlight": "selalu terang",
+    "title_part2": "?",
+    "description": "Daftarkan akun operator Anda. Setelah disetujui admin, Anda bisa langsung memantau dan merawat jaringan lampu.",
+    "btn_primary": "Daftar sebagai Operator",
+    "btn_secondary": "Saya sudah punya akun",
+    "drag_hint": "Seret untuk memutar model"
+  },
+  "FAQSection": {
+    "title_part1": "Pertanyaan yang",
+    "title_part2": "sering diajukan",
+    "description": "Belum menemukan jawabannya? Hubungi tim kami melalui kontak di bagian bawah halaman.",
+    "items": {
+      "what_is": {
+        "question": "Apa itu Street Lamp Predictive Maintenance?",
+        "answer": "Platform untuk memantau lampu jalan tenaga surya berbasis IoT dan memprediksi kerusakannya menggunakan machine learning, sehingga perawatan dapat dilakukan sebelum lampu padam."
+      },
+      "how_predict": {
+        "question": "Bagaimana prediksi kerusakan dihitung?",
+        "answer": "Model ML mempelajari pola telemetri (baterai, tegangan, daya, suhu, lux) dan menghasilkan tingkat risiko, probabilitas gagal, serta estimasi hari hingga gagal. Prediksi aktif setelah minimal 48 data telemetri (±4 hari)."
+      },
+      "hardware": {
+        "question": "Perangkat apa yang dibutuhkan di setiap lampu?",
+        "answer": "Kontroler ESP32 yang terhubung ke sensor tegangan/arus, BMS baterai, dan sensor cahaya. Data dikirim ke server melalui Wi-Fi/MQTT secara berkala."
+      },
+      "offline": {
+        "question": "Apa yang terjadi bila lampu kehilangan koneksi?",
+        "answer": "Lampu tetap beroperasi sesuai jadwal terakhir. Sistem menandai lampu sebagai offline setelah batas waktu tertentu dan membuat alert agar tim dapat memeriksanya."
+      },
+      "roles": {
+        "question": "Siapa saja yang bisa menggunakan platform ini?",
+        "answer": "Admin mengelola pengguna dan pengaturan sistem, operator menangani monitoring dan tiket perbaikan, sedangkan viewer dapat melihat dashboard dan laporan."
+      },
+      "data": {
+        "question": "Apakah data bisa diekspor?",
+        "answer": "Ya. Data telemetri dapat diekspor ke CSV, dan laporan status, energi, pemeliharaan, serta prediksi tersedia dalam format PDF dan CSV."
+      }
+    }
+  },
+  "ErrorPage": {
+    "go_back": "Kembali",
+    "go_home": "Ke Beranda",
+    "try_again": "Coba Lagi",
+    "403": {
+      "title": "Akses Ditolak",
+      "description": "Anda tidak memiliki izin untuk membuka halaman ini. Hubungi admin bila Anda merasa ini keliru."
+    },
+    "404": {
+      "title": "Halaman Tidak Ditemukan",
+      "description": "Halaman yang Anda cari mungkin telah dipindahkan, dihapus, atau tidak pernah ada."
+    },
+    "500": {
+      "title": "Terjadi Kesalahan",
+      "description": "Server mengalami gangguan. Silakan coba beberapa saat lagi."
+    }
+  },
+  "AuthLayout": {
+    "back_home": "Beranda",
+    "hero_title_1": "Rawat lampu jalan",
+    "hero_title_accent": "sebelum padam",
+    "hero_desc": "Masuk untuk memantau telemetri, prediksi risiko, dan tiket perbaikan seluruh jaringan PJU tenaga surya."
+  },
+  "LoginPage": {
+    "title": "Masuk",
+    "subtitle": "Masuk untuk mengakses dashboard pemeliharaan prediktif.",
+    "email_label": "Email",
+    "email_placeholder": "nama@email.com",
+    "password_label": "Kata sandi",
+    "password_placeholder": "••••••••",
+    "forgot_password": "Lupa kata sandi?",
+    "submit_button": "Masuk",
+    "processing": "Memproses...",
+    "no_account": "Belum punya akun?",
+    "register": "Daftar sekarang",
+    "logout_success": "Anda berhasil keluar.",
+    "reset_success": "Kata sandi berhasil diperbarui. Silakan masuk dengan kata sandi baru.",
+    "errors": {
+      "email_required": "Email wajib diisi",
+      "email_invalid": "Format email tidak valid",
+      "password_required": "Kata sandi wajib diisi",
+      "wrong_credentials": "Email atau kata sandi salah.",
+      "inactive": "Akun belum aktif. Pastikan email sudah diverifikasi dan akun telah disetujui admin.",
+      "too_many": "Terlalu banyak percobaan. Coba lagi dalam satu menit.",
+      "server_error": "Tidak dapat terhubung ke server. Coba lagi nanti."
+    }
+  },
+  "RegisterPage": {
+    "title": "Buat Akun",
+    "subtitle": "Daftar sebagai operator sistem pemeliharaan PJU.",
+    "name_label": "Nama lengkap",
+    "name_placeholder": "Nama lengkap",
+    "email_label": "Email",
+    "email_placeholder": "nama@email.com",
+    "password_label": "Kata sandi",
+    "password_placeholder": "Min. 8 karakter",
+    "confirm_label": "Konfirmasi kata sandi",
+    "confirm_placeholder": "Ulangi kata sandi",
+    "note": "Akun baru terdaftar sebagai <accent>Operator</accent> dan memerlukan verifikasi email serta persetujuan admin.",
+    "submit_button": "Buat Akun",
+    "processing": "Mendaftar...",
+    "have_account": "Sudah punya akun?",
+    "login": "Masuk",
+    "strength": {
+      "1": "Lemah",
+      "2": "Cukup",
+      "3": "Kuat",
+      "4": "Sangat kuat"
+    },
+    "errors": {
+      "name_required": "Nama lengkap wajib diisi",
+      "email_required": "Email wajib diisi",
+      "email_invalid": "Format email tidak valid",
+      "password_min": "Kata sandi minimal 8 karakter",
+      "password_mismatch": "Konfirmasi kata sandi tidak cocok",
+      "failed": "Registrasi gagal. Email mungkin sudah terdaftar."
+    }
+  },
+  "ForgotPasswordPage": {
+    "title": "Lupa Kata Sandi",
+    "subtitle": "Masukkan email Anda, kami akan mengirimkan tautan untuk mengatur ulang kata sandi.",
+    "email_label": "Email",
+    "submit_button": "Kirim Tautan Reset",
+    "processing": "Mengirim...",
+    "sent_title": "Email Terkirim",
+    "sent_desc": "Jika email terdaftar, tautan reset telah dikirim ke {email}. Tautan berlaku 1 jam.",
+    "back_login": "Kembali ke halaman masuk",
+    "error": "Gagal mengirim email. Coba lagi."
+  },
+  "ResetPasswordPage": {
+    "title": "Atur Ulang Kata Sandi",
+    "subtitle": "Buat kata sandi baru untuk akun Anda.",
+    "password_label": "Kata sandi baru",
+    "confirm_label": "Konfirmasi kata sandi",
+    "submit_button": "Simpan Kata Sandi",
+    "processing": "Menyimpan...",
+    "invalid_title": "Tautan Tidak Valid",
+    "invalid_desc": "Token reset kata sandi tidak ditemukan atau sudah kedaluwarsa.",
+    "request_new": "Minta tautan baru",
+    "back_login": "Kembali ke halaman masuk",
+    "error": "Tautan reset tidak valid atau sudah kedaluwarsa."
+  },
+  "VerifyEmailPage": {
+    "title": "Cek Email Anda",
+    "desc_sent": "Kami telah mengirim tautan verifikasi ke:",
+    "desc_expire": "Klik tautan di email untuk memverifikasi akun. Tautan berlaku selama 24 jam.",
+    "resend": "Kirim ulang email",
+    "resend_wait": "Kirim ulang ({seconds} dtk)",
+    "sending": "Mengirim...",
+    "resent": "Email verifikasi telah dikirim ulang.",
+    "resend_failed": "Gagal mengirim ulang email. Coba beberapa saat lagi.",
+    "verifying": "Memverifikasi email Anda...",
+    "verify_failed_title": "Verifikasi Gagal",
+    "verify_failed": "Tautan verifikasi tidak valid atau sudah kedaluwarsa.",
+    "email_label": "Email untuk kirim ulang",
+    "back_login": "Kembali ke halaman masuk"
+  },
+  "VerificationSuccessPage": {
+    "title": "Email Terverifikasi",
+    "desc_1": "Email Anda berhasil diverifikasi.",
+    "desc_2": "Akun Anda kini menunggu persetujuan admin. Anda akan menerima email setelah akun disetujui.",
+    "to_login": "Ke Halaman Masuk"
+  },
+  "AwaitingApprovalPage": {
+    "title": "Menunggu Persetujuan",
+    "desc": "Akun Anda sedang ditinjau oleh admin. Anda akan menerima notifikasi email setelah akun disetujui atau ditolak.",
+    "back_login": "Kembali ke halaman masuk"
+  },
+  "LampMapSection": {
+    "title": "Sebaran lampu di lapangan",
+    "description": "Setiap titik adalah satu lampu yang terhubung. Pilih lampu di peta atau tabel untuk melihat kondisi dan contoh data yang dikirim perangkatnya.",
+    "source_live": "Data live · {count} lampu",
+    "source_demo": "Data contoh — server belum terhubung",
+    "filter_label": "Filter status lampu",
+    "filter": {
+      "all": "Semua",
+      "online": "Normal",
+      "warning": "Perlu perhatian",
+      "fault": "Gangguan",
+      "offline": "Offline / servis"
+    },
+    "status": {
+      "online": "Normal",
+      "warning": "Perlu perhatian",
+      "fault": "Gangguan",
+      "offline": "Offline",
+      "maintenance": "Servis"
+    },
+    "risk_level": {
+      "low": "Rendah",
+      "medium": "Sedang",
+      "high": "Tinggi",
+      "unknown": "Belum ada"
+    },
+    "battery": "Baterai",
+    "brightness": "Kecerahan",
+    "health": "Health score",
+    "risk": "Risiko",
+    "no_place": "Tanpa lokasi",
+    "payload": "Contoh data yang dikirim perangkat",
+    "table": {
+      "code": "Kode",
+      "place": "Lokasi",
+      "status": "Status"
+    }
+  },
+  "LampCallout": {
+    "online": "Online",
+    "battery": "Baterai",
+    "solar": "Panel surya",
+    "brightness": "Kecerahan",
+    "risk": "Risiko gagal",
+    "risk_value": "Rendah · 12%",
+    "next_service": "Servis berikutnya",
+    "next_service_value": "±23 hari"
+  }
+}
