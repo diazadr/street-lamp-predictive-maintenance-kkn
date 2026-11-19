@@ -35,3 +35,18 @@ podman compose exec backend python -m app.scripts.seed
 ## Catatan
 
 MQTT dan Celery sudah disiapkan sebagai service/task skeleton. API tetap dapat berjalan tanpa broker MQTT aktif; publish command akan dicatat di log dan mengembalikan `published=false`.
+
+## Machine Learning (Random Forest)
+
+Model mengklasifikasikan kondisi tiap sampel telemetry menjadi **Normal / Perlu Perhatian / Gangguan**, lalu Celery task `run_ml_prediction` mengagregasinya menjadi `risk_level` lampu.
+
+```bash
+# dari folder backend
+python -m app.ml.train --data "../Dataset_PJU_ML - Sheet1.csv"
+# -> ml_models/failure_predictor.joblib (otomatis dipakai task; tanpa file ini task memakai rule-based)
+```
+
+- Fitur & pelabelan: `app/ml/features.py` (dipakai saat training dan prediksi).
+- Notebook eksplorasi: `notebooks/PJU Predictive Maintenance Random Forest.ipynb` (butuh `matplotlib`, `seaborn`, `jupyter`).
+- Satuan telemetry mengikuti firmware: V, mA, mW, lux, °C.
+- Label saat ini dibuat dari aturan domain karena dataset belum berlabel; ganti dengan riwayat tiket kerusakan agar model benar-benar prediktif.

@@ -1,7 +1,8 @@
 """ML Predictive Maintenance tasks.
 
-- run_ml_prediction(lamp_id): Extract features from telemetry, predict failure
-  probability using RandomForest, save prediction, update lamp risk_level.
+- run_ml_prediction(lamp_id): Ambil telemetry terbaru, klasifikasikan kondisi tiap
+  sampel dengan RandomForest (Normal / Perlu Perhatian / Gangguan), simpan prediksi,
+  update lamp risk_level. Model dilatih via ``python -m app.ml.train``.
 - run_daily_ml_all_lamps(): Iterate all ml_ready lamps and run predictions.
 """
 
@@ -16,6 +17,7 @@ import pandas as pd
 from sqlalchemy import func, select
 
 from app.core.database import AsyncSessionLocal
+from app.ml.features import RAW_COLUMNS, ROLLING_WINDOW, build_features, describe_issues
 from app.models import Alert, Lamp, Prediction, Telemetry
 from app.tasks.celery_app import celery_app
 
@@ -33,10 +35,10 @@ FEATURE_COLUMNS = [
 ]
 
 
-async def _extract_features(db, lamp_id) -> dict | None:
-    """Extract statistical features from the last 7 days of telemetry."""
+async def _fetch_recent_rows(db, lamp_id) -> list[Telemetry]:
+    """Telemetry 7 hari terakhir (maks 500 baris), urut terbaru dulu."""
     since = datetime.now(UTC) - timedelta(days=7)
-    rows = list(
+    return list(
         await db.scalars(
             select(Telemetry)
             .where(Telemetry.lamp_id == lamp_id, Telemetry.time >= since)
@@ -44,6 +46,10 @@ async def _extract_features(db, lamp_id) -> dict | None:
             .limit(500)
         )
     )
+
+
+def _extract_features(rows: list[Telemetry]) -> dict | None:
+    """Extract statistical features (untuk fallback rule-based)."""
     if len(rows) < MIN_DATA_POINTS:
         return None
 
@@ -166,37 +172,56 @@ def _rule_based_prediction(features: dict) -> dict:
     }
 
 
-def _ml_prediction(features: dict) -> dict:
-    """Use trained ML model for prediction."""
-    try:
-        model_data = joblib.load(MODEL_PATH)
-        model = model_data["model"]
-        feature_names = model_data["feature_names"]
+def _risk_from_probability(prob: float) -> tuple[str, int]:
+    if prob >= 0.6:
+        return "high", max(1, int((1 - prob) * 14))
+    if prob >= 0.3:
+        return "medium", max(7, int((1 - prob) * 30))
+    return "low", max(30, int((1 - prob) * 90))
 
-        X = np.array([[features.get(f, 0.0) for f in feature_names]])
-        prob = model.predict_proba(X)[0][1]  # probability of failure class
 
-        if prob >= 0.6:
-            risk = "high"
-            days = max(1, int((1 - prob) * 14))
-        elif prob >= 0.3:
-            risk = "medium"
-            days = max(7, int((1 - prob) * 30))
-        else:
-            risk = "low"
-            days = max(30, int((1 - prob) * 90))
+def _ml_prediction(rows: list[Telemetry]) -> dict:
+    """Klasifikasi kondisi per sampel dengan RandomForest lalu agregasi jadi risiko lampu."""
+    model_data = joblib.load(MODEL_PATH)
+    model = model_data["model"]
+    feature_names = model_data["feature_names"]
+    label_names = model_data.get("label_names", {0: "Normal", 1: "Perlu Perhatian", 2: "Gangguan"})
 
-        return {
-            "failure_probability": round(float(prob), 3),
-            "days_to_failure": days,
-            "risk_level": risk,
-            "recommendation": f"Probabilitas kegagalan {prob:.0%}. {'Segera lakukan inspeksi.' if risk == 'high' else 'Pantau secara berkala.' if risk == 'medium' else 'Kondisi baik.'}",
-            "model_version": model_data.get("version", "ml-v1"),
-            "confidence": round(float(model_data.get("accuracy", 0.8)), 3),
-        }
-    except Exception as e:
-        logger.warning(f"ML model failed, falling back to rules: {e}")
-        return _rule_based_prediction(features)
+    # Urut naik berdasarkan waktu agar fitur rolling sama dengan saat training
+    ordered = sorted(rows, key=lambda r: r.time)
+    raw = pd.DataFrame(
+        [{col: (float(v) if (v := getattr(r, col, None)) is not None else np.nan) for col in RAW_COLUMNS} for r in ordered]
+    )
+    X = build_features(raw)[feature_names]
+    proba = model.predict_proba(X)
+
+    classes = list(model.classes_)
+    p_warning = proba[:, classes.index(1)] if 1 in classes else np.zeros(len(X))
+    p_fault = proba[:, classes.index(2)] if 2 in classes else np.zeros(len(X))
+    row_risk = np.clip(p_fault + 0.5 * p_warning, 0, 1)
+
+    # Kondisi terbaru (±1 jendela rolling) lebih menentukan daripada rata-rata panjang
+    prob = float(max(row_risk.mean(), row_risk[-ROLLING_WINDOW:].mean()))
+    risk, days = _risk_from_probability(prob)
+
+    predicted = model.predict(X)
+    recent = predicted[-ROLLING_WINDOW:]
+    dominant = int(pd.Series(recent).mode().iloc[0])
+    flagged = X[predicted != 0]
+    reasons = describe_issues(flagged) if len(flagged) else []
+    action = "Segera lakukan inspeksi." if risk == "high" else "Pantau secara berkala." if risk == "medium" else "Kondisi baik."
+    rec = f"Kondisi terkini: {label_names.get(dominant, dominant)}. Probabilitas kegagalan {prob:.0%}. {action}"
+    if reasons:
+        rec += " Terdeteksi: " + "; ".join(reasons) + "."
+
+    return {
+        "failure_probability": round(prob, 3),
+        "days_to_failure": days,
+        "risk_level": risk,
+        "recommendation": rec,
+        "model_version": model_data.get("version", "ml-v1"),
+        "confidence": round(float(model_data.get("accuracy", 0.8)), 3),
+    }
 
 
 async def _run_prediction(lamp_id_str: str) -> dict:
@@ -213,14 +238,19 @@ async def _run_prediction(lamp_id_str: str) -> dict:
         if not lamp.ml_ready:
             return {"error": "Not enough data", "telemetry_count": lamp.telemetry_count}
 
-        features = await _extract_features(db, lamp_id)
+        rows = await _fetch_recent_rows(db, lamp_id)
+        features = _extract_features(rows)
         if features is None:
             return {"error": "Could not extract features"}
 
         # Use ML model if available, otherwise rule-based
+        result = None
         if MODEL_PATH.exists():
-            result = _ml_prediction(features)
-        else:
+            try:
+                result = _ml_prediction(rows)
+            except Exception as e:
+                logger.warning(f"ML model failed, falling back to rules: {e}")
+        if result is None:
             result = _rule_based_prediction(features)
 
         # Save prediction
