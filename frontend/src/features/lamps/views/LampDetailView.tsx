@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   Lightbulb, MapPin, Cpu, Battery, Signal, SlidersHorizontal, AlertTriangle, Wrench, FileText,
-  Activity, BarChart2, Loader2, BrainCircuit, CalendarClock, Clock, Info,
+  Activity, BarChart2, Loader2, CalendarClock, Clock,
 } from "lucide-react";
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { DashboardPageShell } from "@/src/components/layouts/dashboard/DashboardPageShell";
@@ -16,7 +16,6 @@ import { EmptyState } from "@/src/components/ui/dashboard/EmptyState";
 import { CardSkeleton } from "@/src/components/ui/dashboard/LoadingSkeleton";
 import { CHART_AXIS, CHART_GRID, ChartTooltip } from "@/src/components/ui/dashboard/ChartParts";
 import { Button } from "@/src/components/ui/button";
-import { Alert, AlertDescription } from "@/src/components/ui/alert";
 import { useAuth } from "@/src/components/providers/AuthProvider";
 import { setBreadcrumbLabel } from "@/src/components/layouts/dashboard/navbar/NavBreadcrumbs";
 import { Link } from "@/src/i18n/navigation";
@@ -24,6 +23,7 @@ import { getErrorMessage } from "@/src/lib/http/axios";
 import { formatDateTime, formatDecimal, formatTime, timeAgo } from "@/src/lib/utils";
 import { settle, useFetch } from "@/src/hooks/useFetch";
 import { lampService } from "../services/lampService";
+import { PredictionPanel } from "../components/PredictionPanel";
 import { placeService } from "@/src/features/places/services/placeService";
 
 export function LampDetailView({ id }: { id: string }) {
@@ -84,7 +84,14 @@ export function LampDetailView({ id }: { id: string }) {
   }
 
   const healthTone = (lamp.health_score ?? 0) > 70 ? "text-success" : (lamp.health_score ?? 0) > 40 ? "text-warning" : "text-destructive";
-  const chartData = telemetry.map((p) => ({ ...p, label: formatTime(p.time) }));
+  // The firmware sends no battery level; fall back to the battery model's hourly estimate.
+  const measuredLevels = telemetry.filter((p) => p.battery_level != null);
+  const estimatedLevels = [...predictions]
+    .reverse()
+    .filter((p) => p.predicted_at && p.details?.battery?.soc_pct != null)
+    .map((p) => ({ time: p.predicted_at as string, battery_level: p.details?.battery?.soc_pct ?? null }));
+  const usingEstimate = measuredLevels.length < 2 && estimatedLevels.length > 1;
+  const chartData = (usingEstimate ? estimatedLevels : measuredLevels).map((p) => ({ ...p, label: formatTime(p.time) }));
 
   return (
     <DashboardPageShell
@@ -139,7 +146,7 @@ export function LampDetailView({ id }: { id: string }) {
           </dl>
         </SectionCard>
 
-        <SectionCard className="lg:col-span-2" title={t("chart.title")} description={t("chart.desc")} icon={Activity}>
+        <SectionCard className="lg:col-span-2" title={t("chart.title")} description={t(usingEstimate ? "chart.desc_estimate" : "chart.desc")} icon={Activity}>
           {chartData.length > 1 ? (
             <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
@@ -158,7 +165,9 @@ export function LampDetailView({ id }: { id: string }) {
         </SectionCard>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <PredictionPanel className="lg:col-span-2" lamp={lamp} prediction={prediction} />
+
         <SectionCard title={t("brightness.title")} icon={SlidersHorizontal} description={t("brightness.desc")}>
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <input
@@ -177,34 +186,6 @@ export function LampDetailView({ id }: { id: string }) {
             </Button>
           </div>
           {!canControl && <p className="mt-3 text-xs text-muted-foreground">{t("brightness.viewer")}</p>}
-        </SectionCard>
-
-        <SectionCard title={t("prediction.title")} icon={BrainCircuit}>
-          {!lamp.ml_ready ? (
-            <Alert variant="warning">
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                {t("prediction.not_ready", { count: lamp.telemetry_count ?? 0 })}
-              </AlertDescription>
-            </Alert>
-          ) : prediction ? (
-            <div className="grid grid-cols-3 divide-x divide-border text-center">
-              <div className="px-2">
-                <StatusBadge value={prediction.risk_level || "unknown"} className="text-sm h-6" />
-                <p className="text-xs text-muted-foreground mt-2">{t("prediction.risk")}</p>
-              </div>
-              <div className="px-2">
-                <p className="text-2xl font-semibold tabular-nums text-foreground">{((prediction.failure_probability || 0) * 100).toFixed(0)}%</p>
-                <p className="text-xs text-muted-foreground mt-1">{t("prediction.probability")}</p>
-              </div>
-              <div className="px-2">
-                <p className="text-2xl font-semibold tabular-nums text-foreground">{prediction.days_to_failure ?? "—"}</p>
-                <p className="text-xs text-muted-foreground mt-1">{t("prediction.days")}</p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">{t("prediction.empty")}</p>
-          )}
         </SectionCard>
       </div>
 

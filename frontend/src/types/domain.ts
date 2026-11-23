@@ -74,11 +74,70 @@ export interface Attachment {
   file_path: string;
 }
 
+export type IssueSeverity = "critical" | "warning" | "info";
+export type LampComponent = "panel" | "battery" | "lamp" | "sensor";
+
+/** One finding of the pju_ml assessment (rule engine or Random Forest). */
+export interface PredictionIssue {
+  code: string;
+  component: LampComponent;
+  severity: IssueSeverity;
+  message: string;
+  value?: number | null;
+}
+
+/** Battery model estimate (coulomb counting, reset to 100% when the controller reports "full"). */
+export interface BatteryEstimate {
+  soc_pct?: number | null;
+  hours_since_full?: number | null;
+  nightly_consumption_ah?: number | null;
+  autonomy_nights?: number | null;
+  days_to_empty?: number | null;
+  capacity_ah?: number | null;
+  last_full_at?: string | null;
+  observed_hours?: number | null;
+  voltage_v?: number | null;
+}
+
+export interface LampActivity {
+  night_duty_cycle?: number | null;
+  on_current_a?: number | null;
+  bright_episodes_per_hour?: number | null;
+}
+
+/** Verdict of the Random Forest condition classifier over the last 24 h of 10-minute windows. */
+export interface ConditionVerdict {
+  label: string;
+  label_id?: string;
+  probability?: number | null;
+  /** True once enough windows agree; only confirmed verdicts raise an issue. */
+  confirmed?: boolean;
+  windows_flagged?: number;
+  windows_checked?: number;
+  model_version?: string;
+}
+
+export interface PredictionDetails {
+  health_score?: number | null;
+  component_health?: Partial<Record<LampComponent, number>>;
+  issues?: PredictionIssue[];
+  battery?: BatteryEstimate | null;
+  lamp?: LampActivity | null;
+  condition?: ConditionVerdict | null;
+  assessed_at?: string | null;
+  data_hours?: number | null;
+}
+
 export interface Prediction {
+  id?: string;
+  predicted_at?: string | null;
   risk_level?: RiskLevel;
   failure_probability?: number;
   days_to_failure?: number | null;
   recommendation?: string | null;
+  model_version?: string | null;
+  confidence?: number | null;
+  details?: PredictionDetails | null;
 }
 
 export interface DeviceLog {
