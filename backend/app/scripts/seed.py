@@ -9,10 +9,12 @@ from app.core.security import hash_password
 from app.models import AlertThreshold, EnergyCostConfig, User
 
 
+# Solar lamp: 3.2 V LiFePO4 on a shared bus (up to ~7.7 V panel voltage when the
+# battery is full). Units as sent by the firmware: V and mA.
 DEFAULT_THRESHOLDS = [
-    ("Tegangan rendah", "voltage", "lt", 190.0, 180.0),
-    ("Tegangan tinggi", "voltage", "gt", 240.0, 250.0),
-    ("Arus berlebih", "current", "gt", 5.0, 7.0),
+    ("Tegangan baterai rendah", "battery_voltage", "lt", 3.0, 2.8),
+    ("Tegangan bus tinggi", "battery_voltage", "gt", 8.5, 9.5),
+    ("Arus lampu berlebih", "current", "gt", 1000.0, 1500.0),
     ("Suhu komponen tinggi", "temperature_internal", "gt", 60.0, 80.0),
     ("Suhu lingkungan tinggi", "temperature_ambient", "gt", 45.0, 55.0),
     ("Baterai rendah", "battery_level", "lt", 30.0, 15.0),

@@ -1,4 +1,8 @@
-"""Shared feature engineering for the PJU Random Forest model.
+"""ARSIP: pipeline Random Forest lama (label aturan per sampel), dipakai notebook ini saja.
+
+Backend sekarang memakai paket ``pju_ml`` (lihat backend/README.md).
+
+Shared feature engineering for the PJU Random Forest model.
 
 Dipakai oleh script training (dataset CSV dari perangkat) DAN oleh Celery task
 (baris tabel ``telemetry``), sehingga fitur saat training dan saat prediksi

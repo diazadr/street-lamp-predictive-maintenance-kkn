@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.ml.engine import ML_MIN_TELEMETRY
 from app.models import DeviceLog, Lamp, OtaJob, Telemetry
 from app.schemas.iot import DeviceLogPayload, HeartbeatPayload, OtaStatusPayload
 from app.schemas.telemetry import TelemetryCreate
@@ -40,7 +41,7 @@ async def ingest_telemetry_payload(db: AsyncSession, payload: TelemetryCreate) -
     if payload.signal_strength is not None:
         lamp.last_signal_strength = payload.signal_strength
     lamp.telemetry_count = (lamp.telemetry_count or 0) + 1
-    if lamp.telemetry_count >= 48:
+    if lamp.telemetry_count >= ML_MIN_TELEMETRY:
         lamp.ml_ready = True
 
     await create_alerts_for_thresholds(db, lamp, payload.model_dump())

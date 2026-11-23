@@ -1,107 +1,65 @@
-"""Training Random Forest untuk prediksi kondisi PJU.
+"""Train the PJU predictive-maintenance models.
 
 Pemakaian (dari folder backend):
 
     python -m app.ml.train --data "../Dataset_PJU_ML - Sheet1.csv"
 
-Hasil: ``ml_models/failure_predictor.joblib`` yang otomatis dipakai oleh
-Celery task ``app.tasks.ml_tasks.run_ml_prediction``.
+Menghasilkan di ``ml_models/``:
+
+* ``baseline.json``        perilaku normal lampu (arus LED, daya panel per lux, duty PWM)
+* ``condition_rf.joblib``  Random Forest pengklasifikasi kondisi (normal + 7 jenis gangguan)
+* ``model_card.json``      data, metode, dan hasil evaluasi leave-one-day-out
+
+Dataset mentah tidak punya kejadian rusak, jadi Random Forest dilatih dari data asli
+(label normal) ditambah salinan data asli yang diberi gangguan simulasi sesuai fisika
+perangkat (fault injection). Validasi: latih di satu hari rekaman, uji di hari lain.
+Jalankan dengan scikit-learn versi yang sama dengan ``requirements.txt``.
 """
 
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime
+import json
 from pathlib import Path
 
-import joblib
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
-from sklearn.model_selection import train_test_split
+from pju_ml.cleaning import clean_file, drop_short_segments
+from pju_ml.features import build_features
+from pju_ml.predictor import Baseline
+from pju_ml.training import evaluate_by_day, make_training_set, model_card, train_condition_model
 
-from app.ml.features import FEATURE_COLUMNS, LABEL_NAMES, build_features, label_condition, load_csv_dataset
-
-DEFAULT_OUTPUT = Path(__file__).resolve().parents[2] / "ml_models" / "failure_predictor.joblib"
-
-
-def prepare_dataset(csv_path: str) -> tuple[pd.DataFrame, pd.Series]:
-    raw = load_csv_dataset(csv_path)
-    X = build_features(raw)
-    y = label_condition(X)
-    return X, y
-
-
-def train_model(X: pd.DataFrame, y: pd.Series, random_state: int = 42) -> dict:
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=random_state, stratify=y
-    )
-    model = RandomForestClassifier(
-        n_estimators=500,
-        max_depth=None,
-        min_samples_split=2,
-        min_samples_leaf=1,
-        class_weight="balanced",
-        random_state=random_state,
-        n_jobs=-1,
-    )
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-
-    labels = sorted(LABEL_NAMES)
-    return {
-        "model": model,
-        "accuracy": accuracy_score(y_test, y_pred),
-        "f1_macro": f1_score(y_test, y_pred, average="macro", labels=labels, zero_division=0),
-        "report": classification_report(
-            y_test, y_pred, labels=labels, target_names=[LABEL_NAMES[i] for i in labels], zero_division=0
-        ),
-        "confusion_matrix": confusion_matrix(y_test, y_pred, labels=labels),
-        "feature_importance": pd.Series(model.feature_importances_, index=X.columns).sort_values(ascending=False),
-        "n_train": len(X_train),
-        "n_test": len(X_test),
-    }
-
-
-def save_model(result: dict, output: Path, class_counts: dict) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(
-        {
-            "model": result["model"],
-            "feature_names": FEATURE_COLUMNS,
-            "label_names": LABEL_NAMES,
-            "model_type": "condition_classifier",
-            "version": f"rf-condition-{datetime.now(UTC):%Y%m%d}",
-            "accuracy": float(result["accuracy"]),
-            "f1_macro": float(result["f1_macro"]),
-            "class_counts": class_counts,
-            "trained_at": datetime.now(UTC).isoformat(),
-        },
-        output,
-    )
+from app.ml.engine import BASELINE_PATH, CONDITION_MODEL_PATH, MODEL_DIR
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train Random Forest PJU predictive maintenance")
-    parser.add_argument("--data", required=True, help="Path CSV dataset perangkat")
-    parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Path file .joblib hasil")
+    parser = argparse.ArgumentParser(description="Train PJU predictive-maintenance models")
+    parser.add_argument("--data", required=True, help="Path dataset perangkat (.csv atau .xlsx)")
+    parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
-    X, y = prepare_dataset(args.data)
-    counts = {LABEL_NAMES[k]: int(v) for k, v in y.value_counts().sort_index().items()}
-    print(f"Jumlah sampel: {len(X)}  | Distribusi label: {counts}")
+    clean, report = clean_file(args.data)
+    usable = drop_short_segments(clean)
+    print(f"Data: {len(usable)} bacaan dipakai dari {report.rows_in} "
+          f"({report.suspect_synthetic_rows} baris non-sensor dibuang)")
 
-    result = train_model(X, y)
-    print(f"\nAccuracy : {result['accuracy']:.4f}")
-    print(f"F1 macro : {result['f1_macro']:.4f}\n")
-    print(result["report"])
-    print("Confusion matrix (baris=aktual, kolom=prediksi):")
-    print(result["confusion_matrix"])
-    print("\nFeature importance:")
-    print(result["feature_importance"].round(4).to_string())
+    baseline = Baseline.fit(build_features(usable), source=Path(args.data).name)
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    baseline.save(BASELINE_PATH)
+    print(f"Baseline: {baseline}")
 
-    save_model(result, Path(args.output), counts)
-    print(f"\nModel disimpan ke {args.output}")
+    data = make_training_set(usable, seed=args.seed)
+    print(f"Jendela berlabel: {len(data)} {data['label'].value_counts().to_dict()}")
+    evaluation = evaluate_by_day(data, lambda normal: Baseline.fit(normal), seed=args.seed)
+    for name in ("random_forest", "rules"):
+        s = evaluation[name]
+        print(f"{name:14s} akurasi {s['accuracy']:.3f}  F1-makro {s['f1_macro']:.3f}  "
+              f"alarm palsu {s['false_alarm_rate']:.1%}")
+
+    source = f"{Path(args.data).name}: {len(usable)} bacaan"
+    model = train_condition_model(data, evaluation=evaluation, seed=args.seed, training_data=source)
+    model.save(CONDITION_MODEL_PATH)
+    card = model_card(model)
+    (MODEL_DIR / "model_card.json").write_text(json.dumps(card, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Model disimpan: {CONDITION_MODEL_PATH} (scikit-learn {model.sklearn_version})")
 
 
 if __name__ == "__main__":

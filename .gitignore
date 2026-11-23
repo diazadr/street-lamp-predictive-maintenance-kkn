@@ -27,7 +27,9 @@ backend/reports/*
 !backend/reports/.gitkeep
 backend/ml_models/*
 !backend/ml_models/.gitkeep
-!backend/ml_models/failure_predictor.joblib
+!backend/ml_models/baseline.json
+!backend/ml_models/condition_rf.joblib
+!backend/ml_models/model_card.json
 
 # OS / editor
 .DS_Store

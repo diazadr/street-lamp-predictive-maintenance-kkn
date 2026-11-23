@@ -1,0 +1,7 @@
+{
+  "yield_when_charging": 0.5005,
+  "night_load_current_on": 0.1407,
+  "night_duty_cycle": 0.6216,
+  "n_windows": 287,
+  "source": "Dataset_PJU_ML - Sheet1.csv"
+}

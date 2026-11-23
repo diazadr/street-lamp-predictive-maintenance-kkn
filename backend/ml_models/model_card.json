@@ -1,0 +1,894 @@
+{
+  "model": "rf-condition-20261123",
+  "type": "RandomForestClassifier (300 trees, min_samples_leaf=2, class_weight=balanced)",
+  "sklearn_version": "1.5.1",
+  "trained_at": "2026-11-23T14:14:33.676689+00:00",
+  "training_data": "Dataset_PJU_ML - Sheet1.csv: 11469 bacaan",
+  "window": "10min",
+  "classes": {
+    "normal": "normal",
+    "lamp_off": "lampu tidak menyala",
+    "lamp_dim": "LED meredup",
+    "lamp_on_day": "lampu menyala di siang hari",
+    "panel_soiled": "panel kotor/terhalang",
+    "no_charge": "baterai tidak terisi",
+    "battery_low": "baterai lemah",
+    "sensor_temp": "sensor suhu bermasalah"
+  },
+  "method": "Real windows are 'normal'. Copies of the real data each get one injected fault, applied with the hardware's physics and random severity; windows where the fault covers at least half the readings take its label. Validation trains on one recording day and tests on the other; the rule engine is scored on the same windows.",
+  "injected_copies": {
+    "lamp_off": 2,
+    "lamp_dim": 4,
+    "lamp_on_day": 2,
+    "panel_soiled": 8,
+    "no_charge": 3,
+    "battery_low": 3,
+    "sensor_temp": 1
+  },
+  "metrics": {
+    "windows": 2720,
+    "class_counts": {
+      "lamp_dim": 564,
+      "battery_low": 423,
+      "no_charge": 411,
+      "normal": 287,
+      "sensor_temp": 287,
+      "lamp_off": 282,
+      "lamp_on_day": 274,
+      "panel_soiled": 192
+    },
+    "feature_importance_top10": {
+      "current_balance_residual_mean": 0.0635,
+      "bus_voltage_mean": 0.0621,
+      "charging_fraction": 0.0614,
+      "bus_voltage_max": 0.0582,
+      "voltage_spread_mean": 0.0571,
+      "load_power_mean": 0.056,
+      "load_energy_wh": 0.0487,
+      "solar_current_mean": 0.0419,
+      "load_current_when_on": 0.0417,
+      "temperature_max": 0.0416
+    },
+    "evaluation_leave_one_day_out": {
+      "folds": [
+        {
+          "test_segment": 0,
+          "train_windows": 1528,
+          "test_windows": 1192,
+          "random_forest": {
+            "accuracy": 0.9849,
+            "f1_macro": 0.979,
+            "false_alarm_rate": 0.0153,
+            "per_class": {
+              "normal": {
+                "precision": 0.9021,
+                "recall": 0.9847,
+                "f1": 0.9416,
+                "support": 131
+              },
+              "lamp_off": {
+                "precision": 1.0,
+                "recall": 0.9577,
+                "f1": 0.9784,
+                "support": 142
+              },
+              "lamp_dim": {
+                "precision": 0.9857,
+                "recall": 0.9718,
+                "f1": 0.9787,
+                "support": 284
+              },
+              "lamp_on_day": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 110
+              },
+              "panel_soiled": {
+                "precision": 1.0,
+                "recall": 0.875,
+                "f1": 0.9333,
+                "support": 16
+              },
+              "no_charge": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 165
+              },
+              "battery_low": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 213
+              },
+              "sensor_temp": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 131
+              }
+            },
+            "confusion_matrix": [
+              [
+                129,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                4,
+                136,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                8,
+                0,
+                276,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                110,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                2,
+                0,
+                0,
+                0,
+                14,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                165,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                213,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                131
+              ]
+            ]
+          },
+          "rules": {
+            "accuracy": 0.7617,
+            "f1_macro": 0.7933,
+            "false_alarm_rate": 0.0,
+            "per_class": {
+              "normal": {
+                "precision": 0.3157,
+                "recall": 1.0,
+                "f1": 0.4799,
+                "support": 131
+              },
+              "lamp_off": {
+                "precision": 1.0,
+                "recall": 0.9718,
+                "f1": 0.9857,
+                "support": 142
+              },
+              "lamp_dim": {
+                "precision": 1.0,
+                "recall": 0.5246,
+                "f1": 0.6882,
+                "support": 284
+              },
+              "lamp_on_day": {
+                "precision": 1.0,
+                "recall": 0.5091,
+                "f1": 0.6747,
+                "support": 110
+              },
+              "panel_soiled": {
+                "precision": 1.0,
+                "recall": 0.75,
+                "f1": 0.8571,
+                "support": 16
+              },
+              "no_charge": {
+                "precision": 1.0,
+                "recall": 0.5091,
+                "f1": 0.6747,
+                "support": 165
+              },
+              "battery_low": {
+                "precision": 1.0,
+                "recall": 0.9718,
+                "f1": 0.9857,
+                "support": 213
+              },
+              "sensor_temp": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 131
+              }
+            },
+            "confusion_matrix": [
+              [
+                131,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                4,
+                138,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                135,
+                0,
+                149,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                54,
+                0,
+                0,
+                56,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                0,
+                0,
+                12,
+                0,
+                0,
+                0
+              ],
+              [
+                81,
+                0,
+                0,
+                0,
+                0,
+                84,
+                0,
+                0
+              ],
+              [
+                6,
+                0,
+                0,
+                0,
+                0,
+                0,
+                207,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                131
+              ]
+            ]
+          }
+        },
+        {
+          "test_segment": 1,
+          "train_windows": 1192,
+          "test_windows": 1528,
+          "random_forest": {
+            "accuracy": 0.9116,
+            "f1_macro": 0.8878,
+            "false_alarm_rate": 0.0449,
+            "per_class": {
+              "normal": {
+                "precision": 0.5438,
+                "recall": 0.9551,
+                "f1": 0.693,
+                "support": 156
+              },
+              "lamp_off": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 140
+              },
+              "lamp_dim": {
+                "precision": 0.9964,
+                "recall": 1.0,
+                "f1": 0.9982,
+                "support": 280
+              },
+              "lamp_on_day": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 164
+              },
+              "panel_soiled": {
+                "precision": 0.8889,
+                "recall": 0.2727,
+                "f1": 0.4174,
+                "support": 176
+              },
+              "no_charge": {
+                "precision": 0.988,
+                "recall": 1.0,
+                "f1": 0.9939,
+                "support": 246
+              },
+              "battery_low": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 210
+              },
+              "sensor_temp": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 156
+              }
+            },
+            "confusion_matrix": [
+              [
+                149,
+                0,
+                1,
+                0,
+                6,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                140,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                280,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                164,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                125,
+                0,
+                0,
+                0,
+                48,
+                3,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                246,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                210,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                156
+              ]
+            ]
+          },
+          "rules": {
+            "accuracy": 0.6407,
+            "f1_macro": 0.6624,
+            "false_alarm_rate": 0.0,
+            "per_class": {
+              "normal": {
+                "precision": 0.2213,
+                "recall": 1.0,
+                "f1": 0.3624,
+                "support": 156
+              },
+              "lamp_off": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 140
+              },
+              "lamp_dim": {
+                "precision": 1.0,
+                "recall": 0.3679,
+                "f1": 0.5379,
+                "support": 280
+              },
+              "lamp_on_day": {
+                "precision": 1.0,
+                "recall": 0.5122,
+                "f1": 0.6774,
+                "support": 164
+              },
+              "panel_soiled": {
+                "precision": 1.0,
+                "recall": 0.0227,
+                "f1": 0.0444,
+                "support": 176
+              },
+              "no_charge": {
+                "precision": 1.0,
+                "recall": 0.5122,
+                "f1": 0.6774,
+                "support": 246
+              },
+              "battery_low": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 210
+              },
+              "sensor_temp": {
+                "precision": 1.0,
+                "recall": 1.0,
+                "f1": 1.0,
+                "support": 156
+              }
+            },
+            "confusion_matrix": [
+              [
+                156,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                140,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                177,
+                0,
+                103,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                80,
+                0,
+                0,
+                84,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                172,
+                0,
+                0,
+                0,
+                4,
+                0,
+                0,
+                0
+              ],
+              [
+                120,
+                0,
+                0,
+                0,
+                0,
+                126,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                210,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                156
+              ]
+            ]
+          }
+        }
+      ],
+      "random_forest": {
+        "accuracy": 0.9437,
+        "f1_macro": 0.9051,
+        "false_alarm_rate": 0.0314,
+        "per_class": {
+          "normal": {
+            "precision": 0.6667,
+            "recall": 0.9686,
+            "f1": 0.7898,
+            "support": 287
+          },
+          "lamp_off": {
+            "precision": 1.0,
+            "recall": 0.9787,
+            "f1": 0.9892,
+            "support": 282
+          },
+          "lamp_dim": {
+            "precision": 0.9911,
+            "recall": 0.9858,
+            "f1": 0.9884,
+            "support": 564
+          },
+          "lamp_on_day": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 274
+          },
+          "panel_soiled": {
+            "precision": 0.9118,
+            "recall": 0.3229,
+            "f1": 0.4769,
+            "support": 192
+          },
+          "no_charge": {
+            "precision": 0.9928,
+            "recall": 1.0,
+            "f1": 0.9964,
+            "support": 411
+          },
+          "battery_low": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 423
+          },
+          "sensor_temp": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 287
+          }
+        },
+        "confusion_matrix": [
+          [
+            278,
+            0,
+            3,
+            0,
+            6,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            276,
+            2,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            8,
+            0,
+            556,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            274,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            127,
+            0,
+            0,
+            0,
+            62,
+            3,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            411,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            423,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            287
+          ]
+        ]
+      },
+      "rules": {
+        "accuracy": 0.6937,
+        "f1_macro": 0.6897,
+        "false_alarm_rate": 0.0,
+        "per_class": {
+          "normal": {
+            "precision": 0.2562,
+            "recall": 1.0,
+            "f1": 0.408,
+            "support": 287
+          },
+          "lamp_off": {
+            "precision": 1.0,
+            "recall": 0.9858,
+            "f1": 0.9929,
+            "support": 282
+          },
+          "lamp_dim": {
+            "precision": 1.0,
+            "recall": 0.4468,
+            "f1": 0.6176,
+            "support": 564
+          },
+          "lamp_on_day": {
+            "precision": 1.0,
+            "recall": 0.5109,
+            "f1": 0.6763,
+            "support": 274
+          },
+          "panel_soiled": {
+            "precision": 1.0,
+            "recall": 0.0833,
+            "f1": 0.1538,
+            "support": 192
+          },
+          "no_charge": {
+            "precision": 1.0,
+            "recall": 0.5109,
+            "f1": 0.6763,
+            "support": 411
+          },
+          "battery_low": {
+            "precision": 1.0,
+            "recall": 0.9858,
+            "f1": 0.9929,
+            "support": 423
+          },
+          "sensor_temp": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 287
+          }
+        },
+        "confusion_matrix": [
+          [
+            287,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            278,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            312,
+            0,
+            252,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            134,
+            0,
+            0,
+            140,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            176,
+            0,
+            0,
+            0,
+            16,
+            0,
+            0,
+            0
+          ],
+          [
+            201,
+            0,
+            0,
+            0,
+            0,
+            210,
+            0,
+            0
+          ],
+          [
+            6,
+            0,
+            0,
+            0,
+            0,
+            0,
+            417,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            287
+          ]
+        ]
+      }
+    }
+  },
+  "limitations": [
+    "Only two recording days from one unit; faults are simulated, not observed.",
+    "Mild panel soiling is hard to tell from cloudy weather with so few charging windows.",
+    "Retrain when longer data and real repair tickets (repair_tickets) are available."
+  ]
+}
