@@ -1,4 +1,8 @@
-"""Data for the dashboard home page, in one request.
+"""Telemetry per hour, energy, and the dashboard home page in one request.
+
+The hourly helpers (``hourly_buckets``, ``hourly_window``, ``energy_wh``) also feed
+the energy page, the monitoring trend and the public landing page, so every page
+reports the same watts and watt-hours.
 
 - ``hourly``: the last 24 h of the fleet per hour (solar power, lamp power, bus
   voltage, light, temperature), anchored at the newest reading so imported or
@@ -18,6 +22,7 @@ from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy import and_, case, func, literal_column, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,6 +67,18 @@ def bucket_duration_h(count: int, first: datetime | None, last: datetime | None)
     return min(3600.0, span_s * count / (count - 1)) / 3600
 
 
+def energy_wh(buckets: list[dict]) -> tuple[float, float]:
+    """Solar and lamp energy (Wh) of per-lamp hourly buckets: mean power x hours covered."""
+    solar_wh = load_wh = 0.0
+    for b in buckets:
+        duration = bucket_duration_h(b.get("n") or 0, b.get("first"), b.get("last"))
+        if b.get("solar_power") is not None:
+            solar_wh += _num(b["solar_power"]) * POWER_SCALE * duration
+        if b.get("power") is not None:
+            load_wh += _num(b["power"]) * POWER_SCALE * duration
+    return solar_wh, load_wh
+
+
 def build_hourly(buckets: list[dict], start: datetime, hours: int = WINDOW_HOURS) -> tuple[list[dict], dict]:
     """Fleet series per hour and energy totals from per-lamp hourly buckets.
 
@@ -82,16 +99,10 @@ def build_hourly(buckets: list[dict], start: datetime, hours: int = WINDOW_HOURS
     def mean(values: list[float]) -> float | None:
         return sum(values) / len(values) if values else None
 
-    series, solar_wh, load_wh = [], 0.0, 0.0
+    series = []
     for hour, items in slots.items():
         solar = [_num(b["solar_power"]) * POWER_SCALE for b in items if b.get("solar_power") is not None]
         load = [_num(b["power"]) * POWER_SCALE for b in items if b.get("power") is not None]
-        for b in items:
-            duration = bucket_duration_h(b.get("n") or 0, b.get("first"), b.get("last"))
-            if b.get("solar_power") is not None:
-                solar_wh += _num(b["solar_power"]) * POWER_SCALE * duration
-            if b.get("power") is not None:
-                load_wh += _num(b["power"]) * POWER_SCALE * duration
         series.append({
             "time": hour.isoformat(),
             "solar_w": _round(sum(solar)) if solar else None,
@@ -101,6 +112,7 @@ def build_hourly(buckets: list[dict], start: datetime, hours: int = WINDOW_HOURS
             "temp_c": _round(mean([_num(b["temp_c"]) for b in items if b.get("temp_c") is not None]), 1),
         })
 
+    solar_wh, load_wh = energy_wh([b for items in slots.values() for b in items])
     solar_peaks = [p["solar_w"] for p in series if p["solar_w"] is not None]
     load_peaks = [p["load_w"] for p in series if p["load_w"] is not None]
     energy = {
@@ -211,33 +223,53 @@ def model_card(path: Path = MODEL_CARD_PATH) -> dict | None:
         return None
 
 
-async def get_overview(db: AsyncSession) -> dict:
-    last_data_at = await db.scalar(select(func.max(Telemetry.time)))
-    start, end = window_bounds(last_data_at)
-
+async def hourly_buckets(
+    db: AsyncSession, start: datetime | None, end: datetime | None, lamp_id: UUID | None = None
+) -> list[dict]:
+    """Per lamp and hour: mean powers (telemetry units), bus voltage, lux, valid temperature,
+    and the count and first/last time of the readings. ``start``/``end`` None = unbounded."""
     temperature = func.coalesce(Telemetry.temperature_ambient, Telemetry.temperature_internal)
     valid_temperature = case((temperature.between(*TEMP_RANGE_C), temperature))
     # Truncate in UTC, whatever the session time zone is; the result is naive UTC. The
     # arguments are SQL literals, not bound parameters, so PostgreSQL sees the SELECT and
     # GROUP BY expressions as the same one.
     hour = func.date_trunc(literal_column("'hour'"), func.timezone(literal_column("'UTC'"), Telemetry.time))
-    bucket_rows = await db.execute(
-        select(
-            Telemetry.lamp_id,
-            hour.label("bucket"),
-            func.avg(Telemetry.solar_power).label("solar_power"),
-            func.avg(Telemetry.power).label("power"),
-            func.avg(Telemetry.battery_voltage).label("bus_v"),
-            func.avg(Telemetry.lux).label("lux"),
-            func.avg(valid_temperature).label("temp_c"),
-            func.count().label("n"),
-            func.min(Telemetry.time).label("first"),
-            func.max(Telemetry.time).label("last"),
-        )
-        .where(Telemetry.time >= start, Telemetry.time < end)
-        .group_by(Telemetry.lamp_id, hour)
-    )
-    hourly, energy = build_hourly([dict(r._mapping) for r in bucket_rows], start)
+    stmt = select(
+        Telemetry.lamp_id,
+        hour.label("bucket"),
+        func.avg(Telemetry.solar_power).label("solar_power"),
+        func.avg(Telemetry.power).label("power"),
+        func.avg(func.coalesce(Telemetry.battery_voltage, Telemetry.voltage)).label("bus_v"),
+        func.avg(Telemetry.lux).label("lux"),
+        func.avg(valid_temperature).label("temp_c"),
+        func.count().label("n"),
+        func.min(Telemetry.time).label("first"),
+        func.max(Telemetry.time).label("last"),
+    ).group_by(Telemetry.lamp_id, hour)
+    if start is not None:
+        stmt = stmt.where(Telemetry.time >= start)
+    if end is not None:
+        stmt = stmt.where(Telemetry.time < end)
+    if lamp_id is not None:
+        stmt = stmt.where(Telemetry.lamp_id == lamp_id)
+    return [dict(r._mapping) for r in await db.execute(stmt)]
+
+
+async def hourly_window(db: AsyncSession, hours: int = WINDOW_HOURS, lamp_id: UUID | None = None) -> dict:
+    """The fleet (or one lamp) per hour for ``hours`` ending with the newest reading."""
+    stmt = select(func.max(Telemetry.time))
+    if lamp_id is not None:
+        stmt = stmt.where(Telemetry.lamp_id == lamp_id)
+    last_data_at = await db.scalar(stmt)
+    start, end = window_bounds(last_data_at, hours)
+    series, energy = build_hourly(await hourly_buckets(db, start, end, lamp_id), start, hours)
+    return {"last_data_at": last_data_at, "start": start, "end": end, "series": series, "energy": energy}
+
+
+async def get_overview(db: AsyncSession) -> dict:
+    window = await hourly_window(db)
+    last_data_at, start, end = window["last_data_at"], window["start"], window["end"]
+    hourly, energy = window["series"], window["energy"]
 
     latest = (
         select(Prediction.lamp_id, func.max(Prediction.predicted_at).label("at"))

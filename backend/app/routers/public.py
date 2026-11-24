@@ -1,10 +1,14 @@
+from datetime import datetime
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.models import Alert, Lamp, Telemetry
+from app.schemas.telemetry import WIB
 from app.services.energy_service import get_cost_comparison, get_energy_summary
+from app.services.overview_service import POWER_SCALE, hourly_window
 from fastapi import APIRouter, Depends
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -24,6 +28,10 @@ async def public_dashboard(db: AsyncSession = Depends(get_db)) -> dict:
     avg_signal = await db.scalar(select(func.avg(Lamp.last_signal_strength)).where(Lamp.is_deleted.is_(False))) or 0
     energy = await get_energy_summary(db)
     cost = await get_cost_comparison(db)
+    flow = await hourly_window(db, 12)
+
+    def watts(value):
+        return round(float(value) * POWER_SCALE, 3) if value is not None else None
 
     return {
         "kpi": {
@@ -37,8 +45,8 @@ async def public_dashboard(db: AsyncSession = Depends(get_db)) -> dict:
         },
         "latestTelemetry": {
             "battery_level": float(latest.battery_level) if latest and latest.battery_level is not None else None,
-            "solar_power": float(latest.solar_power) if latest and latest.solar_power is not None else None,
-            "power": float(latest.power) if latest and latest.power is not None else None,
+            "solar_power": watts(latest.solar_power) if latest else None,
+            "power": watts(latest.power) if latest else None,
             "temperature_ambient": float(latest.temperature_ambient) if latest and latest.temperature_ambient is not None else None,
             "temperature_internal": float(latest.temperature_internal) if latest and latest.temperature_internal is not None else None,
             "lux": float(latest.lux) if latest and latest.lux is not None else None,
@@ -58,9 +66,10 @@ async def public_dashboard(db: AsyncSession = Depends(get_db)) -> dict:
             for lamp in lamps
         ],
         "energy": {
-            "dailyGenerated": energy["solar_generated_kwh"] * 1000,
-            "dailyConsumed": energy["energy_consumed_kwh"] * 1000,
-            "efficiency": energy["efficiency_percent"],
+            # today (WIB), in Wh
+            "dailyGenerated": round(energy["solar_generated_today"] * 1000, 2),
+            "dailyConsumed": round(energy["consumed_today"] * 1000, 2),
+            "efficiency": energy["efficiency_pct"],
             "co2Saved": energy["co2_avoided_kg"],
             "treesEquivalent": energy["co2_avoided_kg"] / 21.77 if energy["co2_avoided_kg"] else 0,
             "costSaving": 100 if cost["estimated_saving"] else 0,
@@ -68,13 +77,14 @@ async def public_dashboard(db: AsyncSession = Depends(get_db)) -> dict:
             "traditionalMonthlyCost": cost["traditional_monthly_cost"],
             "smartMonthlyCost": cost["smart_monthly_cost"],
         },
+        # last 12 hours up to the newest reading, W per hour, local (WIB) hour labels
         "energyFlow": [
             {
-                "hour": row.time.strftime("%H"),
-                "generated": float(row.solar_power or 0),
-                "consumed": float(row.power or 0),
+                "hour": datetime.fromisoformat(p["time"]).astimezone(WIB).strftime("%H"),
+                "generated": p["solar_w"],
+                "consumed": p["load_w"],
             }
-            for row in reversed(telemetry_rows[-12:])
+            for p in flow["series"]
         ],
         "sensorSeries": {
             "labels": [row.time.strftime("%H:%M") for row in reversed(telemetry_rows[-7:])],

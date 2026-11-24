@@ -1,6 +1,7 @@
 import csv
 import io
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
@@ -12,7 +13,7 @@ from app.core.dependencies import get_current_user
 from app.models import Alert, Lamp, Telemetry, User
 from app.schemas.telemetry import TelemetryCreate, TelemetryRead
 from app.services.iot_ingestion_service import ingest_telemetry_payload
-from app.services.overview_service import get_overview
+from app.services.overview_service import get_overview, hourly_window
 
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 
@@ -120,29 +121,27 @@ async def risk_summary(db: AsyncSession = Depends(get_db), _: User = Depends(get
 
 @router.get("/trend")
 async def trend(
-    lamp_id: str | None = None,
-    limit: int = Query(100, le=500),
+    lamp_id: UUID | None = None,
+    hours: int = Query(24, ge=1, le=720),
     db: AsyncSession = Depends(get_db),
     _: User = Depends(get_current_user),
 ) -> list[dict]:
-    stmt = select(Telemetry)
-    if lamp_id:
-        from uuid import UUID
-        stmt = stmt.where(Telemetry.lamp_id == UUID(lamp_id))
-    rows = await db.scalars(stmt.order_by(Telemetry.time.desc()).limit(limit))
+    """Per hour over the last ``hours`` up to the newest reading, oldest first.
+
+    Lamp and solar power in W (summed over lamps), bus voltage in V, lux and
+    temperature averaged. Hours without data have None values.
+    """
+    window = await hourly_window(db, hours, lamp_id)
     return [
         {
-            "time": row.time,
-            "power": float(row.power) if row.power else None,
-            "solar_power": float(row.solar_power) if row.solar_power else None,
-            "battery_level": float(row.battery_level) if row.battery_level else None,
-            "voltage": float(row.voltage) if row.voltage else None,
-            "current": float(row.current) if row.current else None,
-            "temperature_internal": float(row.temperature_internal) if row.temperature_internal else None,
-            "lux": float(row.lux) if row.lux else None,
-            "anomaly_score": float(row.anomaly_score) if row.anomaly_score else None,
+            "time": p["time"],
+            "power": p["load_w"],
+            "solar_power": p["solar_w"],
+            "voltage": p["bus_v"],
+            "lux": p["lux"],
+            "temperature": p["temp_c"],
         }
-        for row in rows
+        for p in window["series"]
     ]
 
 
