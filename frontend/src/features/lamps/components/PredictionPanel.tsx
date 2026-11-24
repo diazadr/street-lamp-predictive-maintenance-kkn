@@ -8,7 +8,8 @@ import { StatusBadge } from "@/src/components/ui/dashboard/StatusBadge";
 import { ProgressBar } from "@/src/components/ui/dashboard/ProgressBar";
 import { Alert, AlertDescription } from "@/src/components/ui/alert";
 import { formatDecimal, timeAgo } from "@/src/lib/utils";
-import type { Lamp, LampComponent, Prediction, PredictionIssue } from "@/src/types/domain";
+import type { Lamp, LampComponent, Prediction } from "@/src/types/domain";
+import { useIssueLabels } from "../hooks/useIssueLabels";
 
 /** Same as ML_MIN_TELEMETRY in backend/app/ml/engine.py (~1 hour of readings every ~14 s). */
 export const ML_MIN_TELEMETRY = 260;
@@ -48,18 +49,7 @@ export function PredictionPanel({ lamp, prediction, className }: PredictionPanel
   const condition = details?.condition;
   const health = details?.health_score ?? lamp.health_score;
 
-  const issueTitle = (issue: PredictionIssue) => {
-    if (issue.code.startsWith("ML_")) {
-      const key = `conditions.${issue.code.slice(3).toLowerCase()}`;
-      return t("ml_prefix") + (t.has(key) ? t(key) : issue.code);
-    }
-    const key = `issue_codes.${issue.code}`;
-    return t.has(key) ? t(key) : issue.code.replace(/_/g, " ").toLowerCase();
-  };
-  const conditionLabel = (label: string) => {
-    const key = `conditions.${label}`;
-    return t.has(key) ? t(key) : label;
-  };
+  const { issueTitle, conditionLabel } = useIssueLabels();
   const dash = "—";
 
   return (
@@ -162,7 +152,7 @@ export function PredictionPanel({ lamp, prediction, className }: PredictionPanel
                   <li key={issue.code} className="rounded-md border border-border/60 px-3 py-2">
                     <div className="flex items-center gap-2">
                       <StatusBadge value={issue.severity} />
-                      <span className="text-sm font-medium text-foreground">{issueTitle(issue)}</span>
+                      <span className="text-sm font-medium text-foreground">{issueTitle(issue.code)}</span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{issue.message}</p>
                   </li>
