@@ -12,6 +12,7 @@ from app.core.dependencies import get_current_user
 from app.models import Alert, Lamp, Telemetry, User
 from app.schemas.telemetry import TelemetryCreate, TelemetryRead
 from app.services.iot_ingestion_service import ingest_telemetry_payload
+from app.services.overview_service import get_overview
 
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 
@@ -99,6 +100,12 @@ async def kpi(db: AsyncSession = Depends(get_db), _: User = Depends(get_current_
         "avg_health_score": float(avg_health) if avg_health is not None else None,
         "solar_status": solar_status,
     }
+
+
+@router.get("/overview")
+async def overview(db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)) -> dict:
+    """Dashboard home: last 24 h per hour, energy, lamps with their latest assessment, model card."""
+    return await get_overview(db)
 
 
 @router.get("/risk-summary")
