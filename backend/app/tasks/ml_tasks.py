@@ -68,17 +68,33 @@ async def raise_issue_alerts(db, lamp: Lamp, issues: list[dict]) -> list[Alert]:
     return created
 
 
+def assessed_at(result: dict) -> datetime | None:
+    """Time the assessment describes (its ``now``), as an aware datetime."""
+    value = result.get("assessed_at")
+    if not value:
+        return None
+    moment = datetime.fromisoformat(value)
+    return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
+
+
 def apply_result(lamp: Lamp, result: dict) -> Prediction:
-    """Update the lamp from an assessment and build the Prediction row."""
+    """Update the lamp from an assessment and build the Prediction row.
+
+    ``predicted_at`` is the assessed time, so predictions run for past data (backfill,
+    replay of a recording) land on the timeline where they belong; for the hourly task
+    it is the same as the insert time.
+    """
     lamp.risk_level = result["risk_level"]
     lamp.health_score = result["health_score"]
     soc = (result.get("battery") or {}).get("soc_pct")
     if soc is not None:
         lamp.last_battery_level = soc  # the firmware sends no battery level; this is the estimate
+    extra = {"predicted_at": moment} if (moment := assessed_at(result)) else {}
     return Prediction(
         lamp_id=lamp.id,
         **{k: result[k] for k in PREDICTION_FIELDS},
         details={k: result.get(k) for k in DETAIL_FIELDS},
+        **extra,
     )
 
 

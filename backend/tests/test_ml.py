@@ -96,6 +96,15 @@ def test_apply_result_updates_lamp_and_builds_prediction() -> None:
     assert prediction.lamp_id == lamp.id
     assert prediction.model_version == result["model_version"]
     assert set(prediction.details) == set(ml_tasks.DETAIL_FIELDS)
+    # dated by the assessed time, not the insert time
+    assert prediction.predicted_at == ml_tasks.assessed_at(result)
+    assert prediction.predicted_at.isoformat().startswith(result["assessed_at"][:19])
+
+
+def test_assessed_at_parses_naive_and_aware_times() -> None:
+    assert ml_tasks.assessed_at({"assessed_at": "2026-10-24T01:34:27+00:00"}).tzinfo is not None
+    assert ml_tasks.assessed_at({"assessed_at": "2026-10-24T01:34:27"}).tzinfo is not None
+    assert ml_tasks.assessed_at({}) is None
 
 
 class FakeDB:
