@@ -1,11 +1,11 @@
 import { api, toList } from "@/src/lib/http/axios";
 import type { EnergySummary } from "@/src/features/dashboard/services/dashboardService";
 
+/** One hour of the fleet: solar and lamp power in W. */
 export interface EnergyFlowPoint {
   time: string;
-  // kolom Decimal dikirim backend sebagai string
-  solar_power?: number | string | null;
-  load_power?: number | string | null;
+  solar_power?: number | null;
+  load_power?: number | null;
 }
 
 export interface CostComparison {
@@ -22,7 +22,8 @@ export const energyService = {
   },
   async flow() {
     const { data } = await api.get("/energy/flow");
-    return toList<EnergyFlowPoint>(data).slice(0, 96).reverse();
+    // last 24 h per hour, oldest first
+    return toList<EnergyFlowPoint>(data);
   },
   async costComparison() {
     const { data } = await api.get<CostComparison>("/energy/cost-comparison");

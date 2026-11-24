@@ -18,8 +18,9 @@ import { aggregateByHour, formatNumber, isoDate } from "@/src/lib/utils";
 import { settle, useFetch } from "@/src/hooks/useFetch";
 import { dashboardService, type TrendPoint } from "@/src/features/dashboard/services/dashboardService";
 
-const RANGE_LIMIT = { "24h": 100, "7d": 300, "30d": 500 } as const;
-type Range = keyof typeof RANGE_LIMIT;
+// Hours of telemetry per range; the API returns one point per hour.
+const RANGE_HOURS = { "24h": 24, "7d": 168, "30d": 720 } as const;
+type Range = keyof typeof RANGE_HOURS;
 
 function MiniLine({ data, dataKey, name, unit, color }: { data: ReturnType<typeof aggregateByHour<TrendPoint>>; dataKey: keyof TrendPoint; name: string; unit: string; color: string }) {
   return (
@@ -33,7 +34,7 @@ function MiniLine({ data, dataKey, name, unit, color }: { data: ReturnType<typeo
             <CartesianGrid {...CHART_GRID} />
             <XAxis dataKey="label" {...CHART_AXIS} minTickGap={40} />
             <YAxis {...CHART_AXIS} width={48} />
-            <Tooltip content={<ChartTooltip unit={unit} />} cursor={{ stroke: "var(--border)" }} />
+            <Tooltip content={<ChartTooltip unit={unit} digits={2} />} cursor={{ stroke: "var(--border)" }} />
             <Line type="monotone" dataKey={dataKey} name={name} stroke={color} strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
           </LineChart>
         </ResponsiveContainer>
@@ -48,11 +49,13 @@ export function MonitoringView() {
   const [exporting, setExporting] = useState(false);
 
   const { data, isLoading, reload } = useFetch(
-    () => settle([dashboardService.kpi(), dashboardService.trend(RANGE_LIMIT[range]), dashboardService.riskSummary()] as const),
+    () => settle([dashboardService.kpi(), dashboardService.trend(RANGE_HOURS[range]), dashboardService.riskSummary()] as const),
     [range]
   );
   const [kpi, trend = [], risk] = data || [];
-  const chartData = aggregateByHour(trend, ["power", "solar_power", "voltage", "battery_level", "current"]);
+  const chartData = aggregateByHour(trend, ["power", "solar_power", "voltage"]);
+  // the API returns every hour of the range; hours without data have null values
+  const hasData = chartData.some((p) => p.power != null || p.solar_power != null || p.voltage != null);
 
   const riskRows = [
     { key: "high", value: risk?.high ?? 0, color: "bg-destructive", text: "text-destructive" },
@@ -113,11 +116,11 @@ export function MonitoringView() {
             <TabSwitch
               activeTab={range}
               onTabChange={(v) => setRange(v as Range)}
-              tabs={(Object.keys(RANGE_LIMIT) as Range[]).map((r) => ({ value: r, label: t(`range.${r}`) }))}
+              tabs={(Object.keys(RANGE_HOURS) as Range[]).map((r) => ({ value: r, label: t(`range.${r}`) }))}
             />
           }
         >
-          {chartData.length > 1 ? (
+          {hasData ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <MiniLine data={chartData} dataKey="voltage" name={t("trend.voltage")} unit=" V" color="var(--chart-1)" />
               <MiniLine data={chartData} dataKey="power" name={t("trend.power")} unit=" W" color="var(--chart-1)" />
@@ -154,7 +157,7 @@ export function MonitoringView() {
         icon={Zap}
         headerAction={<ChartLegend items={[{ label: t("flow.solar"), color: "var(--chart-1)" }, { label: t("flow.consumed"), color: "var(--chart-2)" }]} />}
       >
-        {chartData.length > 1 ? (
+        {hasData ? (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
@@ -170,8 +173,8 @@ export function MonitoringView() {
                 </defs>
                 <CartesianGrid {...CHART_GRID} />
                 <XAxis dataKey="label" {...CHART_AXIS} minTickGap={40} />
-                <YAxis {...CHART_AXIS} unit=" W" width={56} domain={[0, "auto"]} />
-                <Tooltip content={<ChartTooltip unit=" W" />} cursor={{ stroke: "var(--border)" }} />
+                <YAxis {...CHART_AXIS} unit=" W" width={64} domain={[0, "auto"]} />
+                <Tooltip content={<ChartTooltip unit=" W" digits={2} />} cursor={{ stroke: "var(--border)" }} />
                 <Area type="monotone" dataKey="solar_power" name={t("flow.solar")} stroke="var(--chart-1)" strokeWidth={2} fill="url(#monSolar)" connectNulls />
                 <Area type="monotone" dataKey="power" name={t("flow.consumed")} stroke="var(--chart-2)" strokeWidth={2} fill="url(#monLoad)" connectNulls />
               </AreaChart>

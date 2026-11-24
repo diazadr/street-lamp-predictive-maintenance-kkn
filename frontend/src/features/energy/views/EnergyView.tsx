@@ -10,18 +10,25 @@ import { CardSkeleton } from "@/src/components/ui/dashboard/LoadingSkeleton";
 import { EmptyState } from "@/src/components/ui/dashboard/EmptyState";
 import { CHART_AXIS, CHART_GRID, ChartLegend, ChartTooltip } from "@/src/components/ui/dashboard/ChartParts";
 import { Button } from "@/src/components/ui/button";
-import { aggregateByHour, formatDecimal, formatRupiah } from "@/src/lib/utils";
+import { aggregateByHour, formatDecimal, formatEnergy, formatMass, formatRupiah } from "@/src/lib/utils";
 import { settle, useFetch } from "@/src/hooks/useFetch";
 import { energyService } from "../services/energyService";
 
 const CO2_PER_KWH = 0.85;
 const CO2_PER_TREE = 21.77;
 
+/** Trees that absorb this much CO2 in a year; "< 0.01" for one lamp's few grams. */
+const treeCount = (co2Kg: number) => {
+  const trees = co2Kg / CO2_PER_TREE;
+  return trees < 0.01 ? "< 0.01" : formatDecimal(trees, trees < 10 ? 2 : 0);
+};
+
 export function EnergyView() {
   const t = useTranslations("Energy");
   const { data, isLoading, reload } = useFetch(() => settle([energyService.summary(), energyService.flow(), energyService.costComparison()] as const), []);
   const [summary, flow = [], cost] = data || [];
   const chartData = aggregateByHour(flow, ["solar_power", "load_power"]);
+  const hasFlow = chartData.some((p) => p.solar_power != null || p.load_power != null);
 
   const co2Today = summary?.solar_generated_today != null ? summary.solar_generated_today * CO2_PER_KWH : null;
   const co2Total = summary?.co2_avoided_kg ?? null;
@@ -41,15 +48,15 @@ export function EnergyView() {
         <CardSkeleton count={4} />
       ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard title={t("kpi.generated")} value={`${formatDecimal(summary?.solar_generated_today, 2)} kWh`} icon={Sun} iconColor="text-success" iconBg="bg-success/10" trend={t("today")} />
-          <MetricCard title={t("kpi.consumed")} value={`${formatDecimal(summary?.consumed_today, 2)} kWh`} icon={TrendingUp} trend={t("today")} />
+          <MetricCard title={t("kpi.generated")} value={formatEnergy(summary?.solar_generated_today)} icon={Sun} iconColor="text-success" iconBg="bg-success/10" trend={t("today")} />
+          <MetricCard title={t("kpi.consumed")} value={formatEnergy(summary?.consumed_today)} icon={TrendingUp} trend={t("today")} />
           <MetricCard
             title={t("kpi.co2")}
-            value={`${formatDecimal(co2Today, 2)} kg`}
+            value={formatMass(co2Today)}
             icon={Leaf}
             iconColor="text-success"
             iconBg="bg-success/10"
-            trend={co2Today != null ? t("trees", { count: (co2Today / CO2_PER_TREE).toFixed(1) }) : undefined}
+            trend={co2Today ? t("trees", { count: treeCount(co2Today) }) : undefined}
           />
           <MetricCard title={t("kpi.efficiency")} value={`${formatDecimal(summary?.efficiency_pct, 0)}%`} icon={Zap} accent />
         </div>
@@ -60,7 +67,7 @@ export function EnergyView() {
         icon={Zap}
         headerAction={<ChartLegend items={[{ label: t("flow.solar"), color: "var(--chart-1)" }, { label: t("flow.load"), color: "var(--chart-2)" }]} />}
       >
-        {chartData.length > 1 ? (
+        {hasFlow ? (
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
@@ -76,8 +83,8 @@ export function EnergyView() {
                 </defs>
                 <CartesianGrid {...CHART_GRID} />
                 <XAxis dataKey="label" {...CHART_AXIS} minTickGap={40} />
-                <YAxis {...CHART_AXIS} unit=" W" width={56} domain={[0, "auto"]} />
-                <Tooltip content={<ChartTooltip unit=" W" />} cursor={{ stroke: "var(--border)" }} />
+                <YAxis {...CHART_AXIS} unit=" W" width={64} domain={[0, "auto"]} />
+                <Tooltip content={<ChartTooltip unit=" W" digits={2} />} cursor={{ stroke: "var(--border)" }} />
                 <Area type="monotone" dataKey="solar_power" name={t("flow.solar")} stroke="var(--chart-1)" strokeWidth={2} fill="url(#enSolar)" connectNulls />
                 <Area type="monotone" dataKey="load_power" name={t("flow.load")} stroke="var(--chart-2)" strokeWidth={2} fill="url(#enLoad)" connectNulls />
               </AreaChart>
@@ -122,9 +129,9 @@ export function EnergyView() {
         <SectionCard title={t("impact.title")} icon={TreePine}>
           <dl className="space-y-3 text-sm">
             {[
-              [t("impact.co2"), co2Total != null ? `${formatDecimal(co2Total, 1)} kg` : "—"],
-              [t("impact.trees"), co2Total != null ? `${(co2Total / CO2_PER_TREE).toFixed(0)}` : "—"],
-              [t("impact.solar"), `${formatDecimal(summary?.solar_generated_kwh, 1)} kWh`],
+              [t("impact.co2"), formatMass(co2Total)],
+              [t("impact.trees"), co2Total != null ? treeCount(co2Total) : "—"],
+              [t("impact.solar"), formatEnergy(summary?.solar_generated_kwh)],
               [t("impact.lamps"), `${summary?.lamp_count ?? "—"}`],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between border-b border-border/50 pb-2.5 last:border-0 last:pb-0">

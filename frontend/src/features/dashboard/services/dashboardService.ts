@@ -28,15 +28,14 @@ export interface EnergySummary {
   efficiency_pct?: number;
 }
 
+/** One hour of /monitoring/trend: lamp and solar power in W (summed over lamps), bus voltage in V. */
 export interface TrendPoint {
   time: string;
   power?: number | null;
   solar_power?: number | null;
-  battery_level?: number | null;
   voltage?: number | null;
-  current?: number | null;
-  temperature_internal?: number | null;
   lux?: number | null;
+  temperature?: number | null;
 }
 
 /** One hour of the fleet: powers summed over lamps (W), the rest averaged. */
@@ -122,9 +121,9 @@ export const dashboardService = {
     const { data } = await api.get<EnergySummary>("/energy/summary");
     return data;
   },
-  async trend(limit = 100) {
-    const { data } = await api.get("/monitoring/trend", { params: { limit } });
-    // API mengembalikan urutan terbaru dulu — dibalik agar grafik kronologis
-    return toList<TrendPoint>(data).slice().reverse();
+  /** Per hour over the last `hours` up to the newest reading, oldest first. */
+  async trend(hours = 24, lampId?: string) {
+    const { data } = await api.get("/monitoring/trend", { params: { hours, lamp_id: lampId } });
+    return toList<TrendPoint>(data);
   },
 };

@@ -6,6 +6,7 @@ import { Lightbulb, Wifi, BatteryCharging, BellRing, Leaf, Zap } from "lucide-re
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { usePublicDashboard } from "../hooks/usePublicDashboard";
 import { CHART_AXIS, CHART_GRID, ChartLegend, ChartTooltip } from "@/src/components/ui/dashboard/ChartParts";
+import { formatEnergy } from "@/src/lib/utils";
 
 export const LiveMonitoringSection = () => {
   const t = useTranslations("LiveMonitoringSection");
@@ -82,8 +83,8 @@ export const LiveMonitoringSection = () => {
                   </defs>
                   <CartesianGrid {...CHART_GRID} />
                   <XAxis dataKey="hour" {...CHART_AXIS} tickFormatter={(h) => `${h}:00`} />
-                  <YAxis {...CHART_AXIS} unit=" W" width={56} />
-                  <Tooltip content={<ChartTooltip unit=" W" digits={0} />} cursor={{ stroke: "var(--border)" }} />
+                  <YAxis {...CHART_AXIS} unit=" W" width={64} />
+                  <Tooltip content={<ChartTooltip unit=" W" digits={2} />} cursor={{ stroke: "var(--border)" }} />
                   <Area type="monotone" dataKey="generated" name={t("solar")} stroke="var(--chart-1)" strokeWidth={2} fill="url(#lmSolar)" activeDot={{ r: 4 }} />
                   <Area type="monotone" dataKey="consumed" name={t("consumed")} stroke="var(--chart-2)" strokeWidth={2} fill="url(#lmLoad)" activeDot={{ r: 4 }} />
                 </AreaChart>
@@ -101,13 +102,14 @@ export const LiveMonitoringSection = () => {
               <Leaf className="h-6 w-6 mb-4 opacity-80" />
               <p className="text-sm opacity-80">{t("impact_title")}</p>
               <p className="text-4xl font-bold mt-1 tabular-nums">
-                {(energy.co2Saved ?? 0).toFixed(1)} <span className="text-lg font-semibold">kg CO₂</span>
+                {(energy.co2Saved ?? 0) < 1 ? ((energy.co2Saved ?? 0) * 1000).toFixed(1) : (energy.co2Saved ?? 0).toFixed(1)}{" "}
+                <span className="text-lg font-semibold">{(energy.co2Saved ?? 0) < 1 ? "g" : "kg"} CO₂</span>
               </p>
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between border-t border-white/15 pt-3">
                 <span className="opacity-80 flex items-center gap-2"><Zap className="h-4 w-4" /> {t("generated")}</span>
-                <span className="font-semibold tabular-nums">{((energy.dailyGenerated ?? 0) / 1000).toFixed(2)} kWh</span>
+                <span className="font-semibold tabular-nums">{formatEnergy((energy.dailyGenerated ?? 0) / 1000)}</span>
               </div>
               <div className="flex items-center justify-between border-t border-white/15 pt-3">
                 <span className="opacity-80">{t("efficiency")}</span>
