@@ -1,53 +1,52 @@
+"""Energy totals for the energy page and the public landing page.
+
+Energy is integrated from the powers the logger sends (mW, converted in
+overview_service), per lamp and hour. The ESP32 does not send the cumulative
+``energy`` / ``solar_energy_today`` fields, so they are not used.
+"""
+
 from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import EnergyCostConfig, Lamp, Telemetry
+from app.models import EnergyCostConfig, Lamp
+from app.schemas.telemetry import WIB
+from app.services.overview_service import energy_wh, hourly_buckets
+
+CO2_KG_PER_KWH = 0.85  # grid emission factor used across the app
 
 
-async def get_energy_summary(db: AsyncSession) -> dict:
-    lamp_count = await db.scalar(
-        select(func.count()).select_from(Lamp).where(Lamp.is_deleted.is_(False))
-    ) or 0
+def summarize(lamp_count: int, total: tuple[float, float], today: tuple[float, float]) -> dict:
+    """Summary fields from (solar Wh, lamp Wh) over all data and since local midnight."""
+    (solar_wh, load_wh), (solar_today_wh, load_today_wh) = total, today
 
-    # Overall totals
-    totals = await db.execute(
-        select(
-            func.coalesce(func.sum(Telemetry.solar_energy_today), 0),
-            func.coalesce(func.sum(Telemetry.energy), 0),
-        )
-    )
-    solar_wh, consumed_kwh = totals.one()
-    solar_kwh = float(solar_wh or 0) / 1000
-    consumed_kwh = float(consumed_kwh or 0)
-
-    # Today's summary
-    today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
-    today_totals = await db.execute(
-        select(
-            func.coalesce(func.sum(Telemetry.solar_energy_today), 0),
-            func.coalesce(func.sum(Telemetry.energy), 0),
-        ).where(Telemetry.time >= today_start)
-    )
-    solar_today_wh, consumed_today_kwh = today_totals.one()
-    solar_today_kwh = float(solar_today_wh or 0) / 1000
-    consumed_today_kwh = float(consumed_today_kwh or 0)
-
-    efficiency_pct = round((solar_today_kwh / consumed_today_kwh) * 100, 1) if consumed_today_kwh > 0 else 0
+    def ratio(solar: float, load: float) -> float:
+        return round(solar / load * 100, 1) if load > 0 else 0
 
     return {
         "lamp_count": lamp_count,
-        # Overall
-        "solar_generated_kwh": round(solar_kwh, 3),
-        "energy_consumed_kwh": round(consumed_kwh, 3),
-        "co2_avoided_kg": round(solar_kwh * 0.85, 3),
-        "efficiency_percent": round((solar_kwh / consumed_kwh) * 100, 2) if consumed_kwh else 0,
-        # Today (fields expected by DashboardHome)
-        "solar_generated_today": round(solar_today_kwh, 3),
-        "consumed_today": round(consumed_today_kwh, 3),
-        "efficiency_pct": efficiency_pct,
+        # all data
+        "solar_generated_kwh": round(solar_wh / 1000, 6),
+        "energy_consumed_kwh": round(load_wh / 1000, 6),
+        "co2_avoided_kg": round(solar_wh / 1000 * CO2_KG_PER_KWH, 6),
+        "efficiency_percent": ratio(solar_wh, load_wh),
+        # today (WIB)
+        "solar_generated_today": round(solar_today_wh / 1000, 6),
+        "consumed_today": round(load_today_wh / 1000, 6),
+        "efficiency_pct": ratio(solar_today_wh, load_today_wh),
     }
+
+
+async def get_energy_summary(db: AsyncSession, now: datetime | None = None) -> dict:
+    lamp_count = await db.scalar(
+        select(func.count()).select_from(Lamp).where(Lamp.is_deleted.is_(False))
+    ) or 0
+    now = now or datetime.now(UTC)
+    today_start = now.astimezone(WIB).replace(hour=0, minute=0, second=0, microsecond=0)
+    total = energy_wh(await hourly_buckets(db, None, None))
+    today = energy_wh(await hourly_buckets(db, today_start, None))
+    return summarize(lamp_count, total, today)
 
 
 async def get_cost_comparison(db: AsyncSession, hours_on: float = 12.0) -> dict:

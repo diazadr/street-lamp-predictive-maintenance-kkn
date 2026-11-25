@@ -16,6 +16,7 @@ interface SectionCardProps {
   accent?: boolean;
   children: React.ReactNode;
   className?: string;
+  contentClassName?: string;
 }
 
 export function SectionCard({
@@ -29,6 +30,7 @@ export function SectionCard({
   accent = false,
   children,
   className,
+  contentClassName,
 }: SectionCardProps) {
   const hasHeader = title || description || badge || headerAction;
 
@@ -59,7 +61,7 @@ export function SectionCard({
           </div>
         </CardHeader>
       )}
-      <CardContent className={cn(noPadding ? "p-0" : "pt-6")}>
+      <CardContent className={cn(noPadding ? "p-0" : "pt-6", contentClassName)}>
         {children}
       </CardContent>
       {footer && (

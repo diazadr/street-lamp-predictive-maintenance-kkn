@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
-from app.models import Telemetry, User
+from app.models import User
 from app.services.energy_service import get_cost_comparison, get_energy_summary
+from app.services.overview_service import hourly_window
 
 router = APIRouter(prefix="/energy", tags=["energy"])
 
@@ -17,8 +17,9 @@ async def summary(db: AsyncSession = Depends(get_db), _: User = Depends(get_curr
 
 @router.get("/flow")
 async def flow(db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)) -> list[dict]:
-    rows = await db.scalars(select(Telemetry).order_by(Telemetry.time.desc()).limit(200))
-    return [{"time": row.time, "solar_generated": row.solar_energy_today, "consumed": row.energy, "solar_power": row.solar_power, "load_power": row.power} for row in rows]
+    """Solar and lamp power of the fleet per hour (W), last 24 h up to the newest reading, oldest first."""
+    window = await hourly_window(db)
+    return [{"time": p["time"], "solar_power": p["solar_w"], "load_power": p["load_w"]} for p in window["series"]]
 
 
 @router.get("/cost-comparison")

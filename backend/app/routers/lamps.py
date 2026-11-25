@@ -117,8 +117,21 @@ async def lamp_telemetry(lamp_id: UUID, start: datetime | None = None, end: date
 
 @router.get("/{lamp_id}/predictions")
 async def lamp_predictions(lamp_id: UUID, db: AsyncSession = Depends(get_db), _: User = Depends(get_current_user)) -> list[dict]:
-    rows = await db.scalars(select(Prediction).where(Prediction.lamp_id == lamp_id).order_by(Prediction.predicted_at.desc()).limit(20))
-    return [{"id": row.id, "risk_level": row.risk_level, "failure_probability": row.failure_probability, "days_to_failure": row.days_to_failure} for row in rows]
+    rows = await db.scalars(select(Prediction).where(Prediction.lamp_id == lamp_id).order_by(Prediction.predicted_at.desc()).limit(48))
+    return [
+        {
+            "id": row.id,
+            "predicted_at": row.predicted_at,
+            "risk_level": row.risk_level,
+            "failure_probability": row.failure_probability,
+            "days_to_failure": row.days_to_failure,
+            "recommendation": row.recommendation,
+            "model_version": row.model_version,
+            "confidence": row.confidence,
+            "details": row.details,
+        }
+        for row in rows
+    ]
 
 
 @router.get("/{lamp_id}/alerts", response_model=list[AlertRead])

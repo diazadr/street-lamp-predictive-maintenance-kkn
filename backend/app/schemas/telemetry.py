@@ -1,7 +1,37 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from typing import Any
 from uuid import UUID
 
+from pydantic import model_validator
+
 from app.schemas.common import ORMModel
+
+# Column names of the ESP32 data logger (Dataset_PJU_ML) -> telemetry fields.
+# Units stay as the device sends them: V, mA, mW, lux, degC.
+LOGGER_KEYS = {
+    "Timestamp": "timestamp",
+    "V1_Solar": "solar_voltage",
+    "I1_Solar": "solar_current",
+    "P1_Solar": "solar_power",
+    "V2_Batt": "battery_voltage",
+    "I2_Batt": "battery_current",
+    "V3_Load": "voltage",
+    "I3_Load": "current",
+    "P3_Load": "power",
+    "Lux": "lux",
+    "Temp_C": "temperature_ambient",  # DS18B20 hangs in open air
+}
+WIB = timezone(timedelta(hours=7))
+
+
+def _logger_timestamp(value: Any) -> Any:
+    """Logger time ``22/10/2026 8:04:55`` (local WIB) -> aware datetime; other values unchanged."""
+    if isinstance(value, str):
+        try:
+            return datetime.strptime(value.strip(), "%d/%m/%Y %H:%M:%S").replace(tzinfo=WIB)
+        except ValueError:
+            return value
+    return value
 
 
 class TelemetryCreate(ORMModel):
@@ -25,6 +55,15 @@ class TelemetryCreate(ORMModel):
     signal_strength: float | None = None
     mqtt_latency_ms: int | None = None
     brightness: float | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _accept_logger_format(cls, data: Any) -> Any:
+        """Accept the data logger's own column names, so firmware can publish rows as logged."""
+        if isinstance(data, dict) and any(key in data for key in LOGGER_KEYS):
+            data = {LOGGER_KEYS.get(key, key): value for key, value in data.items()}
+            data["timestamp"] = _logger_timestamp(data.get("timestamp"))
+        return data
 
 
 class TelemetryRead(TelemetryCreate):

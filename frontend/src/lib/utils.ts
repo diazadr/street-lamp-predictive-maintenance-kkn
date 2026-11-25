@@ -19,6 +19,20 @@ export function formatDecimal(value: number | null | undefined, digits = 1): str
   return Number(value).toFixed(digits);
 }
 
+/** Energy given in kWh, shown in Wh below 1 kWh (a single solar lamp makes a few Wh a day). */
+export function formatEnergy(kwh: number | null | undefined): string {
+  if (kwh == null || Number.isNaN(Number(kwh))) return "—";
+  const v = Number(kwh);
+  return Math.abs(v) < 1 ? `${(v * 1000).toFixed(1)} Wh` : `${v.toFixed(2)} kWh`;
+}
+
+/** Mass given in kg, shown in g below 1 kg. */
+export function formatMass(kg: number | null | undefined): string {
+  if (kg == null || Number.isNaN(Number(kg))) return "—";
+  const v = Number(kg);
+  return Math.abs(v) < 1 ? `${(v * 1000).toFixed(1)} g` : `${v.toFixed(2)} kg`;
+}
+
 export function formatRupiah(value: number | null | undefined): string {
   if (value == null || Number.isNaN(Number(value))) return "—";
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(

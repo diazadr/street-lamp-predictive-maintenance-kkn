@@ -240,6 +240,8 @@ class Prediction(Base):
     recommendation: Mapped[str | None] = mapped_column(Text)
     model_version: Mapped[str | None] = mapped_column(String(50))
     confidence: Mapped[float | None] = mapped_column(Numeric(5, 3))
+    # Full pju_ml assessment: health_score, component_health, issues, battery, lamp, condition
+    details: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
 
 class Alert(Base):

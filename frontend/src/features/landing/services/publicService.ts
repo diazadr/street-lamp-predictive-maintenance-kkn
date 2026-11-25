@@ -12,7 +12,8 @@ export interface PublicDashboard {
   };
   latestTelemetry?: Record<string, number | null>;
   energy?: { dailyGenerated?: number; dailyConsumed?: number; efficiency?: number; co2Saved?: number; treesEquivalent?: number };
-  energyFlow?: { hour: string; generated: number; consumed: number }[];
+  /** W per hour; null for hours without data. dailyGenerated / dailyConsumed are today's Wh. */
+  energyFlow?: { hour: string; generated: number | null; consumed: number | null }[];
 }
 
 export interface PublicLamp {

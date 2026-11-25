@@ -6,6 +6,10 @@ from app.models import Alert, AlertThreshold, Lamp
 
 async def create_alerts_for_thresholds(db: AsyncSession, lamp: Lamp, payload: dict) -> list[Alert]:
     thresholds = await db.scalars(select(AlertThreshold).where(AlertThreshold.is_active.is_(True)))
+    # Telemetry arrives every ~14 s: while an alert of a kind is unresolved, do not add another.
+    open_types = set(
+        await db.scalars(select(Alert.alert_type).where(Alert.lamp_id == lamp.id, Alert.is_resolved.is_(False)))
+    )
     created: list[Alert] = []
     for threshold in thresholds:
         value = payload.get(threshold.metric)
@@ -25,7 +29,7 @@ async def create_alerts_for_thresholds(db: AsyncSession, lamp: Lamp, payload: di
                 severity = "critical"
             elif warning is not None and metric_value >= warning:
                 severity = "warning"
-        if not severity:
+        if not severity or threshold.metric in open_types:
             continue
 
         alert = Alert(
@@ -37,5 +41,6 @@ async def create_alerts_for_thresholds(db: AsyncSession, lamp: Lamp, payload: di
             metric_value=metric_value,
         )
         db.add(alert)
+        open_types.add(threshold.metric)
         created.append(alert)
     return created
